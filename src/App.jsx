@@ -45,7 +45,6 @@ function App() {
 
       <CarritoProvider>
         <Routes>
-
           {/* TIENDA */}
           <Route element={<><NavigationBar /><Footer /></>}>
             <Route path="/" element={<Navigate to="/home" replace />} />
