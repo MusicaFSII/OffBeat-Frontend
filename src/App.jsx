@@ -3,8 +3,6 @@ import {BrowserRouter,Routes,Route,Navigate} from 'react-router-dom';
 
 import ProtectedRoute from './ProtectedRoute';
 
-
-
 //rutas de la tienda
 import NavigationBar from './Tienda/Navbar/navbar';
 import Footer from './Tienda/Footer/footer';
@@ -37,6 +35,7 @@ import CategoriasAdmin from './Admin/Categoria/categoriaA';
 import Dashboard from './Admin/Dashboard/dashboard';
 import Reporte from './Admin/Reportes/reportes';
 import Ordenes from './Admin/Ordenes/ordenes';
+import Comentarios from './Admin/Comentarios/comentarios';
 
 function App() {
   return (
@@ -83,6 +82,7 @@ function App() {
                 <Route path="/editarUsuario/:id" element={<EditarUsuario />} />
                 <Route path="/perfil" element={<Perfil />} />
                 <Route path="/cambiarPsswd/:id" element={<CambiarPsswd />} />
+                <Route path="/comentarios" element={<Comentarios />} />
               </Route>
 
             </Route>

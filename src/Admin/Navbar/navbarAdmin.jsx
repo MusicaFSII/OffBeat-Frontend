@@ -40,6 +40,7 @@ function NavbarAdmin() {
                 <Nav.Link as={Link} to="/usuarios" active={location.pathname === '/usuarios'}>Usuarios</Nav.Link>
                 <Nav.Link as={Link} to="/admin/blogs" active={location.pathname === '/admin/blogs'}>Blogs</Nav.Link>
                 <Nav.Link as={Link} to="/perfil" active={location.pathname === '/perfil'}>Perfil</Nav.Link>
+                <Nav.Link as={Link} to="/comentarios" active={location.pathname === '/comentarios'}>Comentarios</Nav.Link>
               </>
             )}
             {/* ADMIN Y VENDEDOR */}

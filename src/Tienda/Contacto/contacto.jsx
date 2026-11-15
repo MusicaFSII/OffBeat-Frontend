@@ -32,7 +32,7 @@ function Contacto() {
     setMensaje('');
  
     try {
-      const response = await fetch('/api/comentario/guardar', {
+      const response = await fetch('/api/comentarios/guardar', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(datos)

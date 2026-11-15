@@ -127,3 +127,14 @@
     background: var(--mustard) !important;
     color: var(--black) !important;
 }
+
+.btn_editar {
+    background-color: var(--mustard) !important;
+    border-color: var(--mustard) !important;
+    color: var(--black) !important;
+}
+.btn_editar:hover {
+    background-color: #ce9045 !important;
+    border-color: #ab793a !important;
+    color: var(--cream) !important;
+}

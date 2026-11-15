@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 import './editar_usuario.css';
 
 function EditarUsuario() {
@@ -18,6 +20,7 @@ function EditarUsuario() {
   });
 
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const obtenerUsuario = async () => {
@@ -66,14 +69,18 @@ function EditarUsuario() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Usuario actualizado con exito");
-        navigate("/usuarios");
+        setShowModal(true);
       } else {
         setError(data.error || "Error al actualizar usuario");
       }
     } catch (err) {
       setError("Error al conectar con el servidor");
     }
+  };
+
+  const CerrarModal = () => {
+    setShowModal(false);
+    navigate("/usuarios");
   };
 
   return (
@@ -96,7 +103,7 @@ function EditarUsuario() {
           <label>Apellido</label>
           <input
             type="text"
-            name="apellidio"
+            name="apellido"
             value={formData.apellido}
             onChange={handleChange}
             required
@@ -184,6 +191,28 @@ function EditarUsuario() {
           </div>
         </form>
 
+        {/*modal*/}
+        <Modal 
+          show={showModal} 
+          onHide={CerrarModal}
+          centered
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Exito</Modal.Title>
+          </Modal.Header>
+
+          <Modal.Body className="text-start">
+            <p>
+              Usuario actualizado con exito
+            </p>
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button className="btn_editar" onClick={CerrarModal}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );

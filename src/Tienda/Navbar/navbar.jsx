@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { BsCart2, BsPersonCircle, BsBoxArrowRight } from "react-icons/bs";
 import { googleLogout } from '@react-oauth/google';
 import Logo from '../../assets/logo.png';
@@ -6,12 +7,19 @@ import { obtenerUsuario } from '../../roles';
 import './navbar.css';
 
 function NavigationBar() {
-  useLocation(); //hace que se vuelva a leer la sesion en cada cambio de pagina
-  const usuario = obtenerUsuario();
+  const location = useLocation(); //hace que se vuelva a leer la sesion en cada cambio de pagina
+  const navigate = useNavigate();
+  const [usuario, setUsuario] = useState(obtenerUsuario());
+
+  useEffect(() => {
+    setUsuario(obtenerUsuario());
+  }, [location]);
 
   const cerrarSesion = () => {
     googleLogout();
     localStorage.removeItem('usuario');
+    setUsuario(null);
+    navigate('/home');
   };
 
   return (
@@ -37,34 +45,35 @@ function NavigationBar() {
 
         <div className="navbar-actions">
           {usuario ? (
-            <>
+            <div className="user-logged-container">
               <Link
                 to="/login"
-                className="user-button"
-                aria-label="Mi Cuenta"
+                className="user-profile-link"
                 title="Mi Cuenta"
               >
-                <BsPersonCircle size={21}/>
+                <BsPersonCircle size={20} />
+                <span>{usuario.nombre ? `Hola, ${usuario.nombre}` : "Mi Cuenta"}</span>
               </Link>
 
-              <Link
-                to="/login"
-                className="user-button"
+              <button
+                onClick={cerrarSesion}
+                className="logout-button"
                 aria-label="Cerrar sesión"
                 title="Cerrar sesión"
-                onClick={cerrarSesion}
               >
-                <BsBoxArrowRight size={21}/>
-              </Link>
-            </>
+                <BsBoxArrowRight size={20} />
+                <span className="logout-text">Salir</span>
+              </button>
+            </div>
           ) : (
             <Link
               to="/login"
-              className="user-button"
+              className="login-action-button"
               aria-label="Iniciar sesión"
               title="Iniciar sesión"
             >
-              <BsPersonCircle size={21}/>
+              <BsPersonCircle size={20} />
+              <span>Iniciar Sesión</span>
             </Link>
           )}
 
@@ -73,7 +82,6 @@ function NavigationBar() {
             <span>Carrito</span>
           </Link>
         </div>
-
       </nav>
       <Outlet/>  
     </>
