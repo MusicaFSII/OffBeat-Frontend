@@ -1,17 +1,23 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import { obtenerUsuario, rutaInicio } from './roles';
 
-const ProtectedRoute = ({ allowedRole }) => {
-  const usuarioGuardado = localStorage.getItem('usuario');
-  const usuario = usuarioGuardado ? JSON.parse(usuarioGuardado) : null;
+const ProtectedRoute = ({ allowedRoles, blockedRoles }) => {
+  const usuario = obtenerUsuario();
 
-
-  if (!usuario) {
-    return <Navigate to="/Login" replace />;
+  //rutas con roles permitidos
+  if (allowedRoles) {
+    if (!usuario) {
+      return <Navigate to="/login" replace />;
+    }
+    if (!allowedRoles.includes(usuario.rol)) {
+      return <Navigate to={rutaInicio(usuario.rol)} replace />;
+    }
   }
 
-  if (allowedRole && usuario.rol !== allowedRole) {
-    return <Navigate to="/home" replace />;
+  //rutas con roles bloqueados
+  if (blockedRoles && usuario && blockedRoles.includes(usuario.rol)) {
+    return <Navigate to={rutaInicio(usuario.rol)} replace />;
   }
 
   return <Outlet />;

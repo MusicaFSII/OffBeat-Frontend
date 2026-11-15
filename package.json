@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently --kill-others \"vite\" \"python3 server/main.py\"",
+    "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
@@ -12,6 +12,7 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.13.5",
     "better-sqlite3": "^13.0.3",
     "bootstrap": "^5.3.8",
     "express": "^5.2.1",

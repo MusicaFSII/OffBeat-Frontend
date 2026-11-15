@@ -16,17 +16,15 @@ function HistorialCompra() {
         const responseUsuario = await fetch(`/api/usuarios/${id}`);
         const dataUsuario = await responseUsuario.json();
 
-        if (dataUsuario.ok) {
-          setUsuario(dataUsuario.usuario);
-        } else {
-          setUsuario(dataUsuario.usuario || dataUsuario);
+        if (responseUsuario.ok) {
+          setUsuario(dataUsuario);
         }
 
         const responseCompras = await fetch(`/api/compras/usuario/${id}`);
         const dataCompras = await responseCompras.json();
 
-        if (dataCompras.ok) {
-          setCompras(dataCompras.compras);
+        if (responseCompras.ok) {
+          setCompras(dataCompra);
         } else {
           setError("No se pudieron obtener las compras del usuario.");
         }
@@ -72,8 +70,8 @@ function HistorialCompra() {
           </thead>
           <tbody>
             {compras.map((compra) => {
-              const cantidadProductos = compra.items
-                ? compra.items.reduce((acc, item) => acc + (item.cantidad || 1), 0)
+              const cantidadProductos = compra.detalle
+                ? compra.detalle.reduce((acc, item) => acc + (item.cantidad || 1), 0)
                 : 1;
 
               return (

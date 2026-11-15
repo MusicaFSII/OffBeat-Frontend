@@ -3,7 +3,8 @@ import Logo from '../../assets/logo.png';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, googleLogout } from '@react-oauth/google';
+import { rutaInicio } from '../../roles';
 
 function Login() {
   const [correo, setCorreo] = useState('');
@@ -12,7 +13,7 @@ function Login() {
   const [usuario, setUsuario] = useState(null);
   const navigate = useNavigate();
 
-  //verifica si hay un usuario guardado
+//verifica si hay un usuario guardado
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem('usuario');
     if (usuarioGuardado) {
@@ -20,6 +21,14 @@ function Login() {
     }
   }, []);
 
+  //guarda la sesion y manda al usuario a la pagina de su rol (lo usan los dos logins)
+  const iniciarSesion = (usuarioLogueado) => {
+    localStorage.setItem('usuario', JSON.stringify(usuarioLogueado));
+    setUsuario(usuarioLogueado);
+    navigate(rutaInicio(usuarioLogueado.rol));
+  };
+
+  //login con correo y contraseña
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (correo === '' || contrasena === '') {
@@ -30,7 +39,7 @@ function Login() {
     setError("");
 
     try {
-      const response = await fetch('/api/login', {
+      const response = await fetch('/api/usuarios/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo, contrasena }),
@@ -38,27 +47,45 @@ function Login() {
 
       const data = await response.json();
 
-      if (response.ok && data.ok) {
-        localStorage.setItem('usuario', JSON.stringify(data.usuario));
-        setUsuario(data.usuario);
-
-        if (data.usuario.rol === 'admin') {
-          navigate('/dashboard');
-        } 
-        else {
-          navigate('/home');
-        }
-      } 
-      else {
+      if (response.ok) {
+        iniciarSesion(data);
+      } else {
         setError(data.error || 'Credenciales invalidas');
       }
-    } 
-    catch (err) {
-      setError("Error");
+    } catch (err) {
+      setError("Error al conectar con el servidor");
     }
   };
 
+   //login con google: manda el token al backend para que lo valide
+  const loginGoogle = async (credentialResponse) => {
+    setError("");
+
+    try {
+      const response = await fetch('/api/usuarios/login/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        iniciarSesion(data);
+      } else {
+        setError(data.error || 'No se pudo iniciar sesion con Google');
+      }
+    } catch (err) {
+      setError("Error al conectar con el servidor");
+    }
+  };
+
+  const errorGoogle = () => {
+    setError("No se pudo iniciar sesion con Google");
+  };
+
   const logout = () => {
+    googleLogout();
     localStorage.removeItem('usuario');
     setUsuario(null);
     setCorreo('');
@@ -68,14 +95,6 @@ function Login() {
   const registro = () => {
     navigate('/registro');
   };
-
-  //login
-  const responseMessage = (response) => {
-        console.log(response);
-    };
-    const errorMessage = (error) => {
-        console.log(error);
-    };
 
   return (
     <main className="contenedor">
@@ -123,7 +142,7 @@ function Login() {
             <h2>Iniciar Sesión</h2>
             {/*login con google */}
             <GoogleLogin
-              onSuccess={responseMessage} onError={errorMessage}
+              onSuccess={loginGoogle} onError={errorGoogle}
             />
             <label htmlFor="correo">Correo</label>
             <input

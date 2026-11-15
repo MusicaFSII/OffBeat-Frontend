@@ -25,7 +25,7 @@ function CambiarPsswd() {
     }
 
     try {
-      const response = await fetch(`/api/usuarios/${id}/cambiar-clave`, {
+      const response = await fetch(`/api/usuarios/cambiar-clave/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -34,14 +34,13 @@ function CambiarPsswd() {
         })
       });
 
-      const data = await response.json();
-
-      if (data.ok) {
+      if(response.ok) {
         setMensaje('Contraseña actualizada correctamente');
         setTimeout(() => {
           navigate('/perfil');
         }, 1500);
       } else {
+        const data = await response.json();
         setMensaje(data.error || 'Error al actualizar');
       }
     } catch (err) {

@@ -16,9 +16,7 @@ function Dashboard() {
     fetch('/api/usuarios/count')
       .then((response) => response.json())
       .then((data) => {
-        if(data.ok){
-          setTotalUsuarios(data.total);
-        }
+        setTotalUsuarios(data.total);
       })
       .catch((error) => {
         console.error("Error al obtener los usuarios:", error);
@@ -28,8 +26,9 @@ function Dashboard() {
       fetch('/api/productos')
         .then((response) => response.json())
         .then((data) => {
-          if(data.ok && data.productos){
-            setTotalProductos(data.productos.length);
+          const lista = Array.isArray(data) ? data : data.productos;
+          if(lista){
+            setTotalProductos(lista.length);
           }
         })
         .catch((error) => {

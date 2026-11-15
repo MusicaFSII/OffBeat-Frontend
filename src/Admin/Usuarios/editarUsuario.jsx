@@ -24,10 +24,10 @@ function EditarUsuario() {
       try {
         const response = await fetch(`/api/usuarios/${id}`);
         const data = await response.json();
-        if (data.ok) {
-          setFormData(data.usuario);
+        if (response.ok) {
+          setFormData(data);
         } else {
-          setError("No se encontro el usuario");
+          setError(data.error ||"No se encontro el usuario");
         }
       } catch (err) {
         setError("Error al cargar datos del usuario");
@@ -43,25 +43,36 @@ function EditarUsuario() {
     });
   };
 
-  const handleSubmit = async (e) => {
+   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
     try {
-      const response = await fetch(`/api/usuarios/${id}`, {
+      const response = await fetch(`/api/usuarios/actualizar/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          nombre: formData.nombre,
+          apellido: formData.apellido,
+          rut: formData.rut,
+          correo: formData.correo,
+          telefono: formData.telefono,
+          region: formData.region,
+          comuna: formData.comuna,
+          rol: formData.rol,
+        }),
       });
 
       const data = await response.json();
 
-      if (data.ok) {
+      if (response.ok) {
         alert("Usuario actualizado con exito");
         navigate("/usuarios");
       } else {
         setError(data.error || "Error al actualizar usuario");
       }
     } catch (err) {
-      setError("Error");
+      setError("Error al conectar con el servidor");
     }
   };
 
@@ -85,7 +96,7 @@ function EditarUsuario() {
           <label>Apellido</label>
           <input
             type="text"
-            name="apelldio"
+            name="apellidio"
             value={formData.apellido}
             onChange={handleChange}
             required
@@ -125,6 +136,7 @@ function EditarUsuario() {
           >
             <option value="cliente">Cliente</option>
             <option value="admin">Admin</option>
+            <option value="vendedor">Vendedor</option>
           </select>
 
           <div className="region-comuna">

@@ -16,7 +16,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:3000'
+      // microservicios Spring Boot (las rutas especificas van primero)
+      '/api/usuarios': 'http://localhost:8081',
+      '/api/comentarios': 'http://localhost:8081',
+      '/api/compras': 'http://localhost:8082'
     },
     watch: {
       usePolling: true,

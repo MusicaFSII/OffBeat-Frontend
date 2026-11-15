@@ -2,15 +2,14 @@ import Logo from '../../assets/logo.png';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
 
-function registro() {
+function Registro() {
     const navigate = useNavigate();
 
     const registro = async (e) => {
         e.preventDefault();
         const datos = Object.fromEntries(new FormData(e.target));
-        console.log(datos);
         try {
-            const response = await fetch('/api/registro', {
+            const response = await fetch('/api/usuarios/registro', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datos),
@@ -150,4 +149,4 @@ function registro() {
   );
 }
 
-export default registro;
+export default Registro;

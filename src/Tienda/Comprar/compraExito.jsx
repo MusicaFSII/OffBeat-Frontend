@@ -1,5 +1,5 @@
 import { BsChevronLeft, BsCheckCircle } from "react-icons/bs";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, Navigate } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 import Card from 'react-bootstrap/Card';
@@ -20,8 +20,8 @@ function CompraExito() {
       try {
         const response = await fetch(`/api/compras/${compraId}`);
         const data = await response.json();
-        if (data.ok && data.compra) {
-          setCompra(data.compra);
+        if (response.ok) {
+          setCompra(data);
         }
       } catch (error) {
         console.error("Error al obtener los detalles de la compra:", error);
@@ -44,6 +44,11 @@ function CompraExito() {
     html2pdf().set(opciones).from(elemento).save();
   };
 
+  //si se entra sin haber comprado, no hay boleta que mostrar
+  if (!compraId) {
+    return <Navigate to="/home" replace />;
+  }
+
   return (
     <main className="container-fluid my-4 pagina_boleta">
       <div className="wireframe-box p-4 mb-5">
@@ -59,20 +64,24 @@ function CompraExito() {
 
           {compra && (
             <>
+              <p className="text-muted">
+                Fecha: {new Date(compra.fecha).toLocaleString('es-CL')}
+              </p>
+
               <Card className="mt-4 mb-4">
                 <Card.Header as="h5">Informacion del Cliente</Card.Header>
                 <Card.Body>
                   <p><strong>Nombre</strong> {compra.nombre} {compra.apellido}</p>
-                  <p><strong>Correo Electrónico:</strong> {compra.correo}</p>
-                  <p className="mb-0"><strong>Teléfono de contacto:</strong> {compra.telefono}</p>
+                  <p><strong>Correo Electronico:</strong> {compra.correo}</p>
+                  <p className="mb-0"><strong>Telefono de contacto:</strong> {compra.telefono}</p>
                 </Card.Body>
               </Card>
 
               <Card className="mb-4">
-                <Card.Header as="h5">Dirección de Envío</Card.Header>
+                <Card.Header as="h5">Dirección de Envio</Card.Header>
                 <Card.Body>
                   <p><strong>Calle:</strong> {compra.calle} {compra.depo ? `, Dpto/Casa: ${compra.depo}` : ''}</p>
-                  <p><strong>Comuna / Región:</strong> {compra.comuna}, <span className="text-capitalize">{compra.region}</span></p>
+                  <p><strong>Comuna / Region:</strong> {compra.comuna}, <span className="text-capitalize">{compra.region}</span></p>
                   {compra.indicacion && (
                     <p className="mb-0"><strong>Indicaciones de entrega:</strong> {compra.indicacion}</p>
                   )}
