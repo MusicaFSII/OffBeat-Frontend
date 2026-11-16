@@ -7,27 +7,29 @@ export default function ProductosAdmin() {
   const [cargando, setCargando] = useState(true);
   const [editando, setEditando] = useState(false);
   const [form, setForm] = useState({
-    codigo: '',
-    nombre: '',
-    precio: '',
-    imagen: '',
-    descripcion: '',
-    stock: 0,
-    categoria:'',
-    en_oferta:'',
-    porc_oferta:''
+    codigo: '', nombre: '', precio: '', imagenuRL: '', descripcion: '', stock: 0, categoria:'', enOferta:'', porcOferta:''
   });
 
   useEffect(() => {
     const cargarProductos = async () => {
       try {
-        const resProducto = await fetch('/api/productos');
-        const dataProducto = await resProducto.json();
-        setProductos(dataProducto.productos || []);
+        const resProducto = await fetch('http://localhost:8081/api/v1/productos');
+        
+        if(!resProducto.ok){
+          throw new Error('Error al obtener los productos')
+        }
 
-        const resCat = await fetch('/api/categorias');
+        const dataProducto = await resProducto.json();
+        setProductos(Array.isArray(dataProducto) ? dataProducto : []);
+
+        const resCat = await fetch('http://localhost:8081/api/v1/categorias');
+        
+        if(!resCat.ok){
+          throw new Error('Error al obtener las categorías')
+        }
+        
         const dataCategoria = await resCat.json();
-        setCategorias(dataCategoria.categorias || []);
+        setCategorias(Array.isArray(dataCategoria) ? dataCategoria : []);
 
       } catch (error) {
         console.error('Error al conectar con el servidor:', error);
@@ -43,17 +45,17 @@ export default function ProductosAdmin() {
     setForm({ ...form, [e.target.id]: e.target.value });
   };
 
-  const prepararEdicion = (prod) => {
+  const prepararEdicion = (prod, cat) => {
     setEditando(true);
     setForm({
       nombre: prod.nombre || '',
       precio: prod.precio || '',
-      imagen: prod.imagen_url || '',
+      imagen: prod.imagenUrl || '',
       descripcion: prod.descripcion || '',
       stock: prod.stock || 0,
-      categoria: prod.categoria_nombre || '',
-      en_oferta: prod.en_oferta === 1 ? 'SÍ':'NO',
-      porc_oferta: prod.porc_oferta || ''
+      categoria: cat.nombreCategoria || '',
+      en_oferta: prod.enOferta === true ? 'SÍ':'NO',
+      porc_oferta: prod.porcOferta || ''
     });
     document.getElementById('cuadro-ingreso-productos').showModal();
   };
@@ -61,7 +63,7 @@ export default function ProductosAdmin() {
   const abrirParaAgregar = () => {
     setEditando(false); 
     setForm({nombre: '', precio: '', imagen: '', descripcion: '',
-       stock: 0, categoria: '', en_oferta:'', porc_oferta:'' });
+       stock: 0, categoria: '', enOferta:'', porcOferta:'' });
     document.getElementById('cuadro-ingreso-productos').showModal();
   };
 
@@ -83,9 +85,9 @@ export default function ProductosAdmin() {
           imagen: form.imagen,
           descripcion: form.descripcion,
           stock: form.stock || 0,
-          nombre_categoria: form.categoria,
-          en_oferta: form.en_oferta,
-          porc_oferta: form.porc_oferta || 0
+          nombreCategoria: form.categoria,
+          enOferta: form.enOferta,
+          porcOferta: form.porcOferta || 0
         }),
       });
 
@@ -97,7 +99,7 @@ export default function ProductosAdmin() {
         setProductos(newData.productos || []);
         
         document.getElementById('cuadro-ingreso-productos').close();
-        setForm({ codigo: '', nombre: '', precio: '', imagen: '', descripcion: '', stock: 0, categoria: '', en_oferta:'', porc_oferta:'' });
+        setForm({ codigo: '', nombre: '', precio: '', imagenUrl: '', descripcion: '', stock: 0, categoria: '', enOferta:'', porcOferta:'' });
       } else {
         alert(data.error || 'Error al registrar producto');
       }
@@ -159,26 +161,25 @@ export default function ProductosAdmin() {
                   </tr>
                 ) : productos.length > 0 ? (
                   productos.map((prod, index) => (
-                    <tr key={prod.id_producto || index}>
+                    <tr key={prod.idProducto || index}>
                       <th scope="row">{index + 1}</th>
                       <td>{prod.codigo}</td>
                       <td>{prod.nombre}</td>
                       <td>{prod.descripcion}</td>
-                      <td>{prod.categoria_nombre}</td>
+                      <td>{prod.nombreCategoria}</td>
                       <td>{prod.stock}</td>
                       <td>${prod.precio}</td>
                       <td>
-                        {prod.imagen_url ? (
-                          <img src={prod.imagen_url} alt={prod.nombre} width="50" height="50" style={{objectFit: 'cover'}} />
+                        {prod.imagenUrl ? (
+                          <img src={prod.imagenUrl} alt={prod.nombre} width="50" height="50" style={{objectFit: 'cover'}} />
                         ) : (
                           'Sin imagen'
                         )}
                       </td>
-                      <td>{prod.en_oferta === 1 ? 'SÍ' : 'NO'}</td>
-                      <td>{prod.porc_oferta}</td>
-                      <td><button className='btn btn-info button-editar-producto' onClick={()=> prepararEdicion(prod)}>Editar</button></td>
-                      <td><button className='btn btn-danger button-eliminar-producto' onClick={()=> handleEliminar(prod.codigo, prod.nombre)}>Eliminar</button></td>
-
+                      <td>{prod.enOferta === true ? 'SÍ' : 'NO'}</td>
+                      <td>{prod.porcOferta}</td>
+                      <td><button className='btn button-editar-producto' onClick={()=> prepararEdicion(prod)}>Editar</button></td>
+                      <td><button className='btn button-eliminar-producto' onClick={()=> handleEliminar(prod.codigo, prod.nombre)}>Eliminar</button></td>
                     </tr>
                   ))
                 ) : (
@@ -213,7 +214,7 @@ export default function ProductosAdmin() {
                 <select id="categoria" value={form.categoria} onChange={handleChange} required>
                   <option value="">Seleccione la categoria</option>
                   {categorias.map((cat)=>(
-                    <option key={cat.id_categoria} value={cat.nombre_categoria}>{cat.nombre_categoria}</option>
+                    <option key={cat.idCategoria} value={cat.nombreCategoria}>{cat.nombreCategoria}</option>
                   ))}
                 </select>
                   

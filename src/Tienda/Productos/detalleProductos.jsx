@@ -4,6 +4,8 @@ import { CarritoContext } from '../Carrito/Carrito';
 import Accordion from 'react-bootstrap/Accordion';
 import './productos.css';
 
+const url = 'http://localhost:8081/api/v1/productos'
+
 export default function DetalleProductos() {
   const { codigo } = useParams();
   const [producto, setProducto] = useState(null);
@@ -13,22 +15,18 @@ export default function DetalleProductos() {
   const { agregarProducto } = useContext(CarritoContext);
 
   useEffect(() => {
-    const endpoint = codigo ? `/api/productos/${codigo}` : '/api/productos';
+    const endpoint = codigo ? `${url}/${codigo}` : `${url}`;
 
     fetch(endpoint)
       .then((respuesta) => {
         if (!respuesta.ok) {
-          throw new Error('Error en la petición a la API');
+          throw new Error('No se pudo encontrar el producto');
         }
         return respuesta.json();
       })
       .then((data) => {
-        if (data.ok) {
-          if (data.producto) {
-            setProducto(data.producto);
-          } else if (data.productos && data.productos.length > 0) {
-            setProducto(data.productos[0]);
-          }
+        if (data) {
+          setProducto(data);
         } else {
           setError('No se pudo encontrar el producto');
         }
@@ -55,10 +53,10 @@ export default function DetalleProductos() {
 
   const agregarClick = () => {
     agregarProducto({
-      id: producto.id_producto || producto.codigo,
+      id: producto.idProducto || producto.codigo,
       nombre: producto.nombre,
       precio: precioBase || 0,
-      imagen: producto.imagen_url || 'https://via.placeholder.com/300?text=Sin+Imagen'
+      imagen: producto.imagenProducto || 'https://via.placeholder.com/300?text=Sin+Imagen'
     });
   };
 
@@ -66,17 +64,17 @@ export default function DetalleProductos() {
     <main className="container">
       <div className="container-presentacion">
         <div className="card-productos">
-          {producto.en_oferta === 1 && producto.porc_oferta > 0 && (
+          {producto.enOferta === true && producto.porcOferta > 0 && (
             <span className="badge bg-danger">
-              -{producto.porc_oferta}%
+              -{producto.porcOferta}%
             </span>
           )}
           <h1>{producto.nombre}</h1>
-          <img src={producto.imagen_url} className="card-productos-img" alt={producto.nombre || "producto-detalle"} />
+          <img src={producto.imagenProducto} className="card-productos-img" alt={producto.nombre || "producto-detalle"} />
         </div>
 
           <div className="card-precios-detalles">
-            {producto.en_oferta === 1 && producto.porc_oferta > 0 &&(
+            {producto.enOferta === true && producto.porcOferta > 0 &&(
               <div>
               <span>
                 Precio normal: ${formatearPrecio(producto.precio)}

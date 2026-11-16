@@ -18,11 +18,11 @@ function Home() {
   useEffect(() => {
     const cargarProductos = async () => {
       try{
-        const res = await fetch ('/api/productos')
+        const res = await fetch ('http://localhost:8081/api/v1/productos')
         const data = await res.json()
-        setProductos(data.productos || [])
-      }
-      catch (error){
+
+        setProductos(Array.isArray(data) ? data : [])
+      }catch (error){
         console.error("Error al conectar al servidor", error)
       }
     }
@@ -119,20 +119,20 @@ function Home() {
 
         <div className="vinyl-grid">
           {productos.slice(0, 6).map((prod) => {
-            const idUnico = prod.id_producto || prod.codigo
-
+            const idUnico = prod.codigo
+            
             return (
               <article className="vinyl-card" key={idUnico}>
                 <Link to={`/producto/${prod.codigo}`} className="text-decoration-none text-dark">
                   <div className="vinyl-artwork">
                     <img
-                      src={prod.imagen_url}
+                      src={prod.imagenUrl}
                       alt={`Portada de ${prod.nombre}`}
                       loading="lazy"
                     />
 
                     <span className="vinyl-genre">
-                      {prod.categoria_nombre || 'VINILO'}
+                      {prod.nombreCategoria || 'VINILO'}
                     </span>
                   </div>
 
@@ -140,14 +140,14 @@ function Home() {
                     <div className="vinyl-description">
                       <h3>{prod.nombre}</h3>
                       <p>{prod.descripcion || 'Album en vinilo'}</p>
-                      {prod.en_oferta === 1 && prod.porc_oferta > 0 ? (
+                      {prod.enOferta === true && prod.porcOferta > 0 ? (
                         <div className="vinyl-price-offer">
                             <span className="precio_antiguo">{formatoPrecio(prod.precio)}</span>
-                            <strong >{formatoPrecio(prod.precio_final)}</strong>
-                            <span className="descuento">-{prod.porc_oferta}%</span>
+                            <strong >{formatoPrecio(prod.precio)}</strong>
+                            <span className="descuento">-{prod.porcOferta}%</span>
                           </div>
                       ):(
-                       <strong>{formatoPrecio(prod.precio_final)}</strong> 
+                       <strong>{formatoPrecio(prod.precio)}</strong> 
                       )}
                       
                     </div>
