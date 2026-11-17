@@ -5,11 +5,10 @@ export default function CategoriasAdmin() {
   const [categorias, setCategorias] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [nombreCategoria, setNombreCategoria] = useState('');
-  const [codigo, setCodigo] = useState(null); // null = modo crear
+  const [codigo, setCodigo] = useState(null); 
 
   const url_categoria = 'http://localhost:8081/api/v1/categorias';
 
-  // Fuera del useEffect para poder llamarla después de guardar
   const cargarCategorias = async () => {
     try {
       const resCat = await fetch(url_categoria);
@@ -68,7 +67,6 @@ export default function CategoriasAdmin() {
       if (response.ok) {
         alert(editando ? 'Categoría actualizada exitosamente' : 'Categoría agregada exitosamente');
         cargarCategorias();
-        // El reseteo del estado lo hace onClose del <dialog> (limpiarFormulario)
         document.getElementById('cuadro-ingreso-categorias').close();
       } else if (response.status === 404) {
         alert('La categoría no existe');
