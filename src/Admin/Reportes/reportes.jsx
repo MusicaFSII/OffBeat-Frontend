@@ -20,9 +20,9 @@ function Reportes() {
     try {
       const res = await fetch('/api/productos');
       const data = await res.json();
+      const productos = Array.isArray(data) ? data : data.productos;
       
-      if (data.ok && data.productos) {
-        const productos = data.productos;
+      if(productos) {
         setTotalProductos(productos.length);
         const enStock = productos.filter(p => p.stock > 0).length;
         setProductosEnStock(enStock);

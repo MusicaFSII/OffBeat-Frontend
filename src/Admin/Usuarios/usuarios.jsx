@@ -12,8 +12,8 @@ function Usuarios() {
     try{
       const response = await fetch('/api/usuarios');
       const data = await response.json();
-      if(data.ok){
-        setUsuarios(data.usuarios);
+      if(response.ok){
+        setUsuarios(data);
       }
       else{
         console.error("error al obtener los usuarios");
@@ -24,23 +24,24 @@ function Usuarios() {
     }
   };
 
+  //carga lista de usuarios
   useEffect(() => {
     cargarUsuarios();
-  },[]);
+  }, []);
 
-  const eliminarUsuario = async (id) => {
+  const eliminarUsuario = async () => {
     if(!usuarioAEliminar) return;
 
     try {
-      const response = await fetch(`/api/usuarios/${usuarioAEliminar.id}`, {
+      const response = await fetch(`/api/usuarios/eliminar/${usuarioAEliminar.id}`, {
         method: 'DELETE',
       });
-      const data = await response.json();
 
-      if (data.ok) {
+      if (response.ok) {
         setUsuarios(usuarios.filter((u) => u.id !== usuarioAEliminar.id));
         setUsuarioAEliminar(null);
       } else {
+        const data = await response.json();
         alert(data.error || "Error a eliminar al usuario");
       }
     } catch (error) {
@@ -121,7 +122,7 @@ function Usuarios() {
         <Modal.Body className="text-start">
           <p>
             El usuario sera eliminado permanentemente:{" "}
-            <strong>{usuarioAEliminar?.nombre_completo}</strong>
+            <strong>{usuarioAEliminar?.nombre} {usuarioAEliminar?.apellido}</strong>
           </p>
         </Modal.Body>
 

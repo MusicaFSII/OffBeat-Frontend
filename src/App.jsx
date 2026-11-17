@@ -3,8 +3,6 @@ import {BrowserRouter,Routes,Route,Navigate} from 'react-router-dom';
 
 import ProtectedRoute from './ProtectedRoute';
 
-
-
 //rutas de la tienda
 import NavigationBar from './Tienda/Navbar/navbar';
 import Footer from './Tienda/Footer/footer';
@@ -37,57 +35,62 @@ import CategoriasAdmin from './Admin/Categoria/categoriaA';
 import Dashboard from './Admin/Dashboard/dashboard';
 import Reporte from './Admin/Reportes/reportes';
 import Ordenes from './Admin/Ordenes/ordenes';
+import Comentarios from './Admin/Comentarios/comentarios';
 
 function App() {
   return (
-    
-      <BrowserRouter>
-
+    <BrowserRouter>
       <CarritoProvider>
         <Routes>
-
           {/* TIENDA */}
-          <Route element={<><NavigationBar /><Footer /></>}>
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/producto" element={<Productos />} />
-            <Route path="/producto/:codigo" element={<DetalleProductos />} />
-            <Route path="/categorias/:id" element={<Categorias />} />
-            <Route path="/carrito" element={<DetallesCarrito/>} />
-            <Route path="/nosotros" element={<Nosotros />} />
-            <Route path="/blogs" element={<Blog />} />
-            <Route path="/admin/blogs" element={<Blog />} />
-            <Route path="/blogs/:blog_id" element={<DetallesBlog />} />
-            <Route path="/contacto" element={<Contacto />} />
-            <Route path="/compras" element={<Compras />} />
-            <Route path="/compraExito" element={<CompraExito />} />
-            <Route path="/compraFallo" element={<CompraFallo />} />
-            <Route path="/ofertas" element={<Ofertas />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/registro" element={<Registro />} />
+          <Route element={<ProtectedRoute blockedRoles={['vendedor']} />}>
+            <Route element={<><NavigationBar /><Footer /></>}>
+              <Route path="/" element={<Navigate to="/home" replace />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/producto" element={<Productos />} />
+              <Route path="/producto/:codigo" element={<DetalleProductos />} />
+              <Route path="/categorias/:id" element={<Categorias />} />
+              <Route path="/carrito" element={<DetallesCarrito/>} />
+              <Route path="/nosotros" element={<Nosotros />} />
+              <Route path="/blogs" element={<Blog />} />
+              <Route path="/admin/blogs" element={<Blog />} />
+              <Route path="/blogs/:blog_id" element={<DetallesBlog />} />
+              <Route path="/contacto" element={<Contacto />} />
+              <Route path="/compras" element={<Compras />} />
+              <Route path="/compraExito" element={<CompraExito />} />
+              <Route path="/compraFallo" element={<CompraFallo />} />
+              <Route path="/ofertas" element={<Ofertas />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/registro" element={<Registro />} />
+            </Route>
           </Route>
 
-          {/* ADMIN solo usuario con el rol = admin*/}
-          <Route element={<ProtectedRoute allowedRole="admin" />}>
+          {/* PANEL: admin y vendedor*/}
+          <Route element={<ProtectedRoute allowedRoles={['admin', 'vendedor']} />}>
             <Route element={<><NavbarAdmin /></>}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/usuarios" element={<Usuarios />} />
-              <Route path="/editarUsuario/:id" element={<EditarUsuario />} />
-              <Route path="/historialCompra/:id" element={<HistorialCompra />} />
+              {/* lo que ve el admin Y el vendedor */}
               <Route path="/productosA" element={<ProductosAdmin />} />
+              <Route path="/ordenes" element={<Ordenes />} />
               <Route path="/categoriaA" element={<CategoriasAdmin />} />
               <Route path="/reportes" element={<Reporte />} />
-              <Route path="/perfil" element={<Perfil />} />
-              <Route path="/cambiarPsswd/:id" element={<CambiarPsswd />} />
-              <Route path="/ordenes" element={<Ordenes/>} />
+              
+              {/* lo que ve solo el admin */}
+              <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                <Route path="/historialCompra/:id" element={<HistorialCompra />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/usuarios" element={<Usuarios />} />
+                <Route path="/editarUsuario/:id" element={<EditarUsuario />} />
+                <Route path="/perfil" element={<Perfil />} />
+                <Route path="/cambiarPsswd/:id" element={<CambiarPsswd />} />
+                <Route path="/comentarios" element={<Comentarios />} />
+              </Route>
+
             </Route>
           </Route>
 
         </Routes>
-        </CarritoProvider>
-      </BrowserRouter>
-
-    
+      </CarritoProvider>
+    </BrowserRouter>
   );
 }
 export default App;

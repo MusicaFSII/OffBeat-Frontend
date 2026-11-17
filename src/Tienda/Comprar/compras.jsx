@@ -11,6 +11,7 @@ import {CarritoContext} from "../Carrito/Carrito";
 function Compras() {
   const navigate = useNavigate();
   const {carrito, costoTotal, totalProductos, limpiarCarrito} = useContext(CarritoContext);
+  const [enviado, setEnviado] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
@@ -26,21 +27,25 @@ function Compras() {
   //autocompleta si la sesion esta abierta 
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem('usuario');
-    if (usuarioGuardado) {
-      try {
-        const u = JSON.parse(usuarioGuardado);
-        setFormData(prev => ({
-          ...prev,
-          nombre: u.nombre || prev.nombre,
-          apellido: u.apellido || prev.apellido,
-          correo: u.correo || prev.correo,
-          telefono: u.telefono || prev.telefono,
-          region: u.region || prev.region,
-          comuna: u.comuna || prev.comuna
-        }));
-      } catch (error) {
-        console.error("Error al cargar el usuario:", error);
-      }
+    if (!usuarioGuardado) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const u = JSON.parse(usuarioGuardado);
+      setFormData(prev => ({
+        ...prev,
+        nombre: u.nombre || prev.nombre,
+        apellido: u.apellido || prev.apellido,
+        correo: u.correo || prev.correo,
+        telefono: u.telefono || prev.telefono,
+        region: (u.region && u.region !== 'selecciona') ? u.region : prev.region,
+        comuna: u.comuna || prev.comuna
+      }));
+    } catch (error) {
+      console.error("Error al cargar el usuario:", error);
+      navigate('/login');
     }
   }, []);
 
@@ -49,54 +54,37 @@ function Compras() {
     setFormData(prev => ({ ...prev, [name]: value}));
   };
 
-  //se autocompleta si el correo coincide con la base de datos
-  const correoBlur = async () => {
-    if(!formData.correo.trim()) return;
-    
-    try {
-      const response = await fetch(`/api/usuarios/correo/${encodeURIComponent(formData.correo)}`);
-      const data = await response.json();
-       
-      if(data.ok && data.usuario){
-        const u = data.usuario;
-        setFormData(prev => ({
-          ...prev,
-          nombre: u.nombre || prev.nombre,
-          apellido: u.apellido || prev.apellido,
-          telefono: u.telefono || prev.telefono,
-          region: u.region || prev.region,
-          comuna: u.comuna || prev.comuna
-        }));
-      }
-    }
-    catch (error){
-      console.error("Error al autocompletar al usuario", error);
-    }
-  };
-
   const submit = async (e) => {
     e.preventDefault();
+    setEnviado(true);
 
     try {
-      const response = await fetch('/api/compras', {
+      const response = await fetch('/api/compras/guardar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          total: costoTotal,
-          productos: carrito
+          productos: carrito.map((item) => ({
+            productoId: item.id,
+            nombre: item.nombre,
+            cantidad: item.cantidad,
+            precio: item.precio
+          }))
         })
       });
 
       const data = await response.json();
-      if (data.ok && data.compra_id) {
-        navigate('/compraExito',{ state: { compraId: data.compra_id } });
+      if (response.ok ) {
+        navigate('/compraExito',{ state: { compraId: data.id } });
       } else {
-        navigate('/compraFallo',{ state: { compraId: data.compra_id, errorMsg: data.error } });
+        navigate('/compraFallo',{ state: { compraId: data.error} });
       }
     } catch (error) {
       console.error("Error al enviar la compra:", error);
       navigate('/compraFallo', { state: { errorMsg: "Error al procesar el pago" } });
+    }
+    finally {
+      setEnviado(false);
     }
   };
 
@@ -277,7 +265,9 @@ function Compras() {
 
           {/* Botón de pagar */}
           <div className="container mt-4">
-            <Button type="submit" className="boton">Pagar ${costoTotal.toLocaleString('es-CL')}</Button>
+            <Button type="submit" className="boton" disabled={enviando || carrito.length === 0}>
+              {enviando ? 'Procesando...' : `Pagar $${costoTotal.toLocaleString('es-CL')}`}
+            </Button>
           </div>
 
         </form>

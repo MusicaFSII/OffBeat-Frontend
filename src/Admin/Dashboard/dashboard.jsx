@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
-import { BsCart, BsBoxSeam, BsFillPeopleFill } from "react-icons/bs";
+import { BsCart, BsBoxSeam, BsFillPeopleFill, BsChatLeftText } from "react-icons/bs";
 import { BsClipboard2Data,BsPersonCircle,BsBarChart,BsTags,BsBasket2 } from "react-icons/bs";
 
 function Dashboard() {
@@ -16,9 +16,7 @@ function Dashboard() {
     fetch('/api/usuarios/count')
       .then((response) => response.json())
       .then((data) => {
-        if(data.ok){
-          setTotalUsuarios(data.total);
-        }
+        setTotalUsuarios(data.total);
       })
       .catch((error) => {
         console.error("Error al obtener los usuarios:", error);
@@ -28,8 +26,9 @@ function Dashboard() {
       fetch('/api/productos')
         .then((response) => response.json())
         .then((data) => {
-          if(data.ok && data.productos){
-            setTotalProductos(data.productos.length);
+          const lista = Array.isArray(data) ? data : data.productos;
+          if(lista){
+            setTotalProductos(lista.length);
           }
         })
         .catch((error) => {
@@ -104,6 +103,12 @@ const dataCardLink= [
   Link: '/home',
   icon: <BsBasket2 size={30} className='mb-2 icono_color mx-auto block'/>,
   text: 'Visualizacion de la tienda en tiempo real.'
+  },
+  {id: 'comentarios',
+  title: 'Comentarios',
+  Link: '/comentarios',
+  icon: <BsChatLeftText size={30} className='mb-2 icono_color mx-auto block'/>,
+  text: 'Comentarios dejados por los usuarios en la tienda.'
   }
 ];
 

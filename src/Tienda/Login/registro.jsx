@@ -1,16 +1,21 @@
 import Logo from '../../assets/logo.png';
+import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 import './login.css';
 
-function registro() {
+function Registro() {
     const navigate = useNavigate();
+    //estado del modal y sus mensajes
+    const [showModal, setShowModal] = useState(false);
+    const [modalContent, setModalContent] = useState({ title: "", message: "", isSuccess: false });
 
     const registro = async (e) => {
         e.preventDefault();
         const datos = Object.fromEntries(new FormData(e.target));
-        console.log(datos);
         try {
-            const response = await fetch('/api/registro', {
+            const response = await fetch('/api/usuarios/registro', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datos),
@@ -19,19 +24,40 @@ function registro() {
             console.log(data);
 
             if(response.ok) {
-                alert(data.message || 'Usuario registrado con exito');
-                navigate('/login')
+                setModalContent({ 
+                    title: "Registro Exitoso",
+                    message: data.message || "Usuario registrado con exito",
+                    isSuccess: true
+                });
+                setShowModal(true);
             }
             else{
-                alert(data.error || 'Error al registrar el usuario');
+                setModalContent({ 
+                    title: "Error en el Registro",
+                    message: data.error || 'Error al registrar el usuario',
+                    isSuccess: false
+                });
+                setShowModal(true);
             }
         } catch (error) {
             console.error('Error:', error);
+            setModalContent({ 
+                title: "Error de Conexion",
+                message: 'No se pudo conectar con el servidor',
+                isSuccess: false
+            });
+            setShowModal(true);
         }
-        
     };
 
-    {/*boton de la caja de si ya tengo cuenta*/}
+    const CerrarModal = () => {
+        setShowModal(false);
+        if(modalContent.isSuccess) {
+            navigate('/login');
+        }
+    };
+
+    //boton de la caja de si ya tengo cuenta
     const login = () => {
         navigate('/login');
     }
@@ -146,8 +172,29 @@ function registro() {
             </div>
         </div>
     </div>
+
+    {/*modal para mensajes de exito y error*/}
+    <Modal 
+      show={showModal} 
+      onHide={CerrarModal}
+      centered
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>{modalContent.title}</Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body className="text-start">
+        <p>{modalContent.message}</p>
+      </Modal.Body>
+
+      <Modal.Footer>
+        <Button className="btn_editar" onClick={CerrarModal}>
+          Aceptar
+        </Button>
+      </Modal.Footer>
+    </Modal>
     </>
   );
 }
 
-export default registro;
+export default Registro;

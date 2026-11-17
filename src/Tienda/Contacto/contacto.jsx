@@ -32,7 +32,7 @@ function Contacto() {
     setMensaje('');
  
     try {
-      const response = await fetch('/api/comentario', {
+      const response = await fetch('/api/comentarios/guardar', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(datos)
@@ -40,9 +40,9 @@ function Contacto() {
 
       const data = await response.json();
 
-      if (response.ok && data.ok) {
+      if (response.ok) {
         setVarianteAlert('success');
-        setMensaje(data.mensaje || 'Comentario enviado con exito');
+        setMensaje('Comentario enviado con exito');
         setDatos({ correo: '', nombre: '', apellido: '', comentario: '' });
       } 
       else {
