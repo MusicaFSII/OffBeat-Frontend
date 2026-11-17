@@ -9,7 +9,10 @@ export default function CategoriasTienda() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const endpoint = id ? `/api/productos/categorias/${id}` : '/api/productos';
+    const endpoint = id ? `http://localhost:8081/api/v1/categorias/${id}` : `http://localhost:8081/api/v1/categorias`;
+
+    setCargando(true);
+    setError(null);
 
     fetch(endpoint)
       .then((respuesta) => {
@@ -21,8 +24,9 @@ export default function CategoriasTienda() {
       .then((data) => {
         if (data.ok) {
             setProductos(data.productos || []);
+            setNombreCategoria(data.nombre || (id ? `ID: ${id}` : 'General'));
           } else {
-            setError(data.mensaje || 'No se encontrar productos de esta categoría');
+            setError(data.mensaje || 'No se encontraron productos de esta categoría');
           }
         setCargando(false);
       })
@@ -63,7 +67,7 @@ export default function CategoriasTienda() {
 
     <div className="row g-4">
       {productos.map((prod) => {
-        const idUnico = prod.id_producto || prod.codigo;
+        const idUnico = prod.idProducto || prod.codigo;
 
         return (
           <div className="col-12 col-md-4" key={idUnico}>
@@ -71,7 +75,7 @@ export default function CategoriasTienda() {
                 <div className="card-body p-0">
                   <Link to={`/producto/${prod.codigo}`} className="card-link text-decoration-none">
                     <div className="position-relative overflow-hidden mb-3" style={{ background: '#f5f5f5', borderRadius: '4px' }}>
-                      <img src={prod.imagen_url} alt={`Portada de ${prod.nombre}`} className="img-fluid w-100" loading="lazy"/>
+                      <img src={prod.imagenProducto} alt={`Portada de ${prod.nombre}`} className="img-fluid w-100" loading="lazy"/>
                     </div>
                     <h3 className="h5 card-title mb-1">{prod.nombre}</h3>
                     <p className="card-text text-bright small mb-2">{prod.descripcion}</p>

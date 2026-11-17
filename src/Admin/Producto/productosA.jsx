@@ -1,244 +1,280 @@
 import React, { useState, useEffect } from 'react';
 import './registroProductos.css';
 
+const FORM_VACIO = {
+  nombre: '',
+  descripcion: '',
+  precio: '',
+  stock: 0,
+  codigoCategoria: '',
+  imagenUrl: '',
+  enOferta: '',
+  porcOferta: ''
+};
+
 export default function ProductosAdmin() {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [cargando, setCargando] = useState(true);
-  const [editando, setEditando] = useState(false);
-  const [form, setForm] = useState({
-    codigo: '',
-    nombre: '',
-    precio: '',
-    imagen: '',
-    descripcion: '',
-    stock: 0,
-    categoria:'',
-    en_oferta:'',
-    porc_oferta:''
-  });
+  const [codigo, setCodigo] = useState(null); 
+  const [form, setForm] = useState(FORM_VACIO);
+
+  const url_producto = 'http://localhost:8081/api/v1/productos';
+  const url_categoria = 'http://localhost:8081/api/v1/categorias';
+
+  const cargarProductos = async () => {
+    try {
+      const resProducto = await fetch(url_producto);
+      if (!resProducto.ok) throw new Error('Error al obtener los productos');
+      const dataProducto = await resProducto.json();
+      setProductos(Array.isArray(dataProducto) ? dataProducto : []);
+    } catch (error) {
+      console.error('Error al conectar con el servidor:', error);
+    }
+  };
+
+  const cargarCategorias = async () => {
+    try {
+      const resCategoria = await fetch(url_categoria);
+      if (!resCategoria.ok) throw new Error('Error al obtener categorías');
+      const dataCategoria = await resCategoria.json();
+      setCategorias(Array.isArray(dataCategoria) ? dataCategoria : []);
+    } catch (error) {
+      console.error('Error al obtener categorías', error);
+    }
+  };
 
   useEffect(() => {
-    const cargarProductos = async () => {
-      try {
-        const resProducto = await fetch('/api/productos');
-        const dataProducto = await resProducto.json();
-        setProductos(dataProducto.productos || []);
-
-        const resCat = await fetch('/api/categorias');
-        const dataCategoria = await resCat.json();
-        setCategorias(dataCategoria.categorias || []);
-
-      } catch (error) {
-        console.error('Error al conectar con el servidor:', error);
-      } finally {
-        setCargando(false);
-      }
+    const cargarTodo = async () => {
+      await Promise.all([cargarProductos(), cargarCategorias()]);
+      setCargando(false);
     };
-
-    cargarProductos();
+    cargarTodo();
   }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.id]: e.target.value });
   };
 
+  const abrirAgregar = () => {
+    setCodigo(null);
+    setForm(FORM_VACIO);
+    document.getElementById('cuadro-ingreso-productos').showModal();
+  };
+
   const prepararEdicion = (prod) => {
-    setEditando(true);
+    setCodigo(prod.codigo); 
     setForm({
       nombre: prod.nombre || '',
-      precio: prod.precio || '',
-      imagen: prod.imagen_url || '',
       descripcion: prod.descripcion || '',
-      stock: prod.stock || 0,
-      categoria: prod.categoria_nombre || '',
-      en_oferta: prod.en_oferta === 1 ? 'SÍ':'NO',
-      porc_oferta: prod.porc_oferta || ''
+      precio: prod.precio ?? '',
+      stock: prod.stock ?? 0,
+      codigoCategoria: prod.codigoCategoria || '',
+      imagenUrl: prod.imagenUrl || '',
+      enOferta: prod.enOferta ? 'SÍ' : 'NO',
+      porcOferta: prod.porcOferta ?? ''
     });
     document.getElementById('cuadro-ingreso-productos').showModal();
   };
 
-  const abrirParaAgregar = () => {
-    setEditando(false); 
-    setForm({nombre: '', precio: '', imagen: '', descripcion: '',
-       stock: 0, categoria: '', en_oferta:'', porc_oferta:'' });
-    document.getElementById('cuadro-ingreso-productos').showModal();
+  const limpiarFormulario = () => {
+    setCodigo(null);
+    setForm(FORM_VACIO);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const url = editando ? `/api/productos/${form.codigo}` : '/api/productos';
-    const metodo = editando ? 'PUT' : 'POST';
+    const editando = codigo !== null;
+    const url = editando
+      ? `${url_producto}/actualizar/${encodeURIComponent(codigo)}`
+      : `${url_producto}/guardar`;
+
+    const enOferta = form.enOferta === 'SÍ';
 
     try {
       const response = await fetch(url, {
-        method: metodo,
+        method: editando ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           nombre: form.nombre,
-          precio: parseFloat(form.precio),
-          imagen: form.imagen,
           descripcion: form.descripcion,
-          stock: form.stock || 0,
-          nombre_categoria: form.categoria,
-          en_oferta: form.en_oferta,
-          porc_oferta: form.porc_oferta || 0
+          precio: parseFloat(form.precio),
+          stock: parseInt(form.stock, 10) || 0,
+          imagenUrl: form.imagenUrl,
+          enOferta: enOferta,
+          porcOferta: enOferta ? parseInt(form.porcOferta, 10) || 0 : 0,
+          codigoCategoria: form.codigoCategoria
         }),
       });
 
-      const data = await response.json();
-      if (data.ok) {
-        alert(data.mensaje);
-        const res = await fetch('/api/productos');
-        const newData = await res.json();
-        setProductos(newData.productos || []);
-        
+      if (response.ok) {
+        alert(editando ? 'Producto actualizado' : 'Producto agregado');
+        cargarProductos();
         document.getElementById('cuadro-ingreso-productos').close();
-        setForm({ codigo: '', nombre: '', precio: '', imagen: '', descripcion: '', stock: 0, categoria: '', en_oferta:'', porc_oferta:'' });
+      } else if (response.status === 404) {
+        alert('El producto o la categoría no existe');
       } else {
-        alert(data.error || 'Error al registrar producto');
+        const data = await response.json().catch(() => ({}));
+        alert(data.error || 'Error al guardar el producto');
       }
     } catch (error) {
-      console.error('Error en la petición:', error);
+      console.error('Error en la petición: ', error);
+      alert('No se pudo conectar con el servidor');
     }
   };
 
-  const handleEliminar = async(codigo, nombre) => {
-    const confirmar = window.confirm(`¿Estás seguro de que deseas eliminar el producto "${nombre}"?`);
-
-    if(!confirmar)return;
+  const handleEliminar = async (prod) => {
+    const confirmar = window.confirm(`¿Estás seguro de que deseas eliminar el producto "${prod.nombre}"?`);
+    if (!confirmar) return;
 
     try {
-      const response = await fetch(`/api/productos/${codigo}`,{
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `${url_producto}/eliminar/${encodeURIComponent(prod.codigo)}`,
+        { method: 'DELETE' }
+      );
 
-      const data = await response.json();
-
-      if(response.ok){
-        alert(data.mensaje || 'Producto eliminado correctamente');
-        const res = await fetch('/api/productos');
-        const nuevosDatos = await res.json();
-        setProductos(nuevosDatos.productos || []);
-      }else{
-          alert(data.error || 'Error al eliminar el producto');
-      } 
+      if (response.ok) {
+        alert('Producto eliminado correctamente');
+        cargarProductos();
+      } else if (response.status === 404) {
+        alert('El producto no existe');
+      } else {
+        alert('Error al eliminar el producto');
+      }
     } catch (error) {
-      console.error('Hubo un error tratando de eliminar el producto', error)
+      console.error('Hubo un error tratando de eliminar el producto', error);
+      alert('No se pudo conectar con el servidor');
     }
   };
 
   return (
     <div className="container-fluid flex-grow-1 p-0">
       <div className="row m-0 min-vh-80">
-          <div className="p-4">
-            <table className="table">
-              <thead>
+        <div className="p-4">
+          <table className="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Código</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Descripción</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Imagen</th>
+                <th scope="col">¿en oferta?</th>
+                <th scope="col">%</th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody id="table-products">
+              {cargando ? (
                 <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">Código</th>
-                  <th scope="col">Nombre</th>
-                  <th scope="col">Descripción</th>
-                  <th scope="col">Categoría</th>
-                  <th scope="col">Stock</th>
-                  <th scope="col">Precio</th>
-                  <th scope="col">Imagen</th>
-                  <th scope="col">¿en oferta?</th>
-                  <th scope="col">%</th>
-                  <th scope="col"></th>
-                  <th scope="col"></th>
+                  <td colSpan="12" className="text-center">Cargando productos...</td>
                 </tr>
-              </thead>
-              <tbody id="table-products" >
-                {cargando ? (
-                  <tr>
-                    <td span="5" className="text-center">Cargando productos...</td>
+              ) : productos.length > 0 ? (
+                productos.map((prod, index) => (
+                  <tr key={prod.codigo}>
+                    <th scope="row">{index + 1}</th>
+                    <td>{prod.codigo}</td>
+                    <td>{prod.nombre}</td>
+                    <td>{prod.descripcion}</td>
+                    <td>{prod.nombreCategoria}</td>
+                    <td>{prod.stock}</td>
+                    <td>${prod.precio}</td>
+                    <td>
+                      {prod.imagenUrl ? (
+                        <img src={prod.imagenUrl} alt={prod.nombre} width="50" height="50" style={{ objectFit: 'cover' }} />
+                      ) : (
+                        'Sin imagen'
+                      )}
+                    </td>
+                    <td>{prod.enOferta ? 'SÍ' : 'NO'}</td>
+                    <td>{prod.porcOferta}</td>
+                    <td>
+                      <button className="btn button-editar-producto" onClick={() => prepararEdicion(prod)}>
+                        Editar
+                      </button>
+                    </td>
+                    <td>
+                      <button className="btn button-eliminar-producto" onClick={() => handleEliminar(prod)}>
+                        Eliminar
+                      </button>
+                    </td>
                   </tr>
-                ) : productos.length > 0 ? (
-                  productos.map((prod, index) => (
-                    <tr key={prod.id_producto || index}>
-                      <th scope="row">{index + 1}</th>
-                      <td>{prod.codigo}</td>
-                      <td>{prod.nombre}</td>
-                      <td>{prod.descripcion}</td>
-                      <td>{prod.categoria_nombre}</td>
-                      <td>{prod.stock}</td>
-                      <td>${prod.precio}</td>
-                      <td>
-                        {prod.imagen_url ? (
-                          <img src={prod.imagen_url} alt={prod.nombre} width="50" height="50" style={{objectFit: 'cover'}} />
-                        ) : (
-                          'Sin imagen'
-                        )}
-                      </td>
-                      <td>{prod.en_oferta === 1 ? 'SÍ' : 'NO'}</td>
-                      <td>{prod.porc_oferta}</td>
-                      <td><button className='btn btn-info button-editar-producto' onClick={()=> prepararEdicion(prod)}>Editar</button></td>
-                      <td><button className='btn btn-danger button-eliminar-producto' onClick={()=> handleEliminar(prod.codigo, prod.nombre)}>Eliminar</button></td>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="12" className="text-center">No hay productos registrados</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
 
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="text-center">No hay productos registrados</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <button className="btn btn-success button-nuevo-producto" id="ventana-ingreso-productos" onClick={abrirAgregar}>
+            Agregar producto
+          </button>
 
-            <button className="btn btn-success button-nuevo-producto" id="ventana-ingreso-productos" onClick={() => document.getElementById('cuadro-ingreso-productos').showModal()}>
-              Agregar producto
-            </button>
+          <dialog id="cuadro-ingreso-productos" onClose={limpiarFormulario}>
+            <form className="cuadro-registro" id="forma-ingreso-productos" onSubmit={handleSubmit}>
+              <h3>{codigo ? 'EDITAR PRODUCTO' : 'INGRESO DE PRODUCTOS'}</h3>
 
-            <dialog id="cuadro-ingreso-productos">
-              <form className="cuadro-registro" id="forma-ingreso-productos" onSubmit={handleSubmit}>
-                <h3>INGRESO DE PRODUCTOS</h3>
+              <label htmlFor="nombre">Nombre: </label>
+              <input type="text" id="nombre" value={form.nombre} onChange={handleChange} required />
 
-                <label htmlFor="nombre">Nombre: </label>
-                <input type="text" id="nombre" value={form.nombre} onChange={handleChange} required />
+              <label htmlFor="descripcion">Descripción: </label>
+              <input type="text" id="descripcion" value={form.descripcion} onChange={handleChange} required />
 
-                <label htmlFor="descripcion">Descripción: </label>
-                <input type="text" id="descripcion" value={form.descripcion} onChange={handleChange} required />
+              <label htmlFor="precio">Precio: </label>
+              <input type="number" id="precio" min="0" step="any" value={form.precio} onChange={handleChange} required />
 
-                <label htmlFor="precio">Precio: </label>
-                <input type="number" id="precio" value={form.precio} onChange={handleChange} required />
-                
-                <label htmlFor="stock">Stock: </label>
-                <input type="number" id="stock" value={form.stock} onChange={handleChange} required />
+              <label htmlFor="stock">Stock: </label>
+              <input type="number" id="stock" min="0" value={form.stock} onChange={handleChange} required />
 
-                <label htmlFor="categoria">Categoría: </label>
-                <select id="categoria" value={form.categoria} onChange={handleChange} required>
-                  <option value="">Seleccione la categoria</option>
-                  {categorias.map((cat)=>(
-                    <option key={cat.id_categoria} value={cat.nombre_categoria}>{cat.nombre_categoria}</option>
-                  ))}
-                </select>
-                  
-                
-                <label htmlFor="imagen">Imagen (URL): </label>
-                <input type="text" id="imagen" value={form.imagen} onChange={handleChange} />
+              <label htmlFor="codigoCategoria">Categoría: </label>
+              <select id="codigoCategoria" value={form.codigoCategoria} onChange={handleChange} required>
+                <option value="">Seleccione la categoría</option>
+                {categorias.map((cat) => (
+                  <option key={cat.codigo} value={cat.codigo}>{cat.nombre}</option>
+                ))}
+              </select>
 
-                <label htmlFor="en_oferta">¿en oferta?: </label>
-                <select id="en_oferta" name="en_oferta" value={form.en_oferta} onChange={handleChange} required>
-                  <option value="">Seleccione...</option>
-                  <option value="SÍ">SÍ</option>
-                  <option value="NO">NO</option>
-                </select>
+              <label htmlFor="imagenUrl">Imagen (URL): </label>
+              <input type="text" id="imagenUrl" value={form.imagenUrl} onChange={handleChange} />
 
-                <label htmlFor="porc_oferta">% oferta: </label>
-                <input type="number" id="porc_oferta" value={form.porc_oferta} onChange={handleChange}/>
+              <label htmlFor="enOferta">¿en oferta?: </label>
+              <select id="enOferta" value={form.enOferta} onChange={handleChange} required>
+                <option value="">Seleccione...</option>
+                <option value="SÍ">SÍ</option>
+                <option value="NO">NO</option>
+              </select>
 
-                <div style={{ marginTop: '50px' }}>
-                  <button type="submit" className="btn btn-info">Aceptar</button>
-                  <button type="button" className="btn btn-danger" id="btn-cerrar-cuadro" onClick={() => document.getElementById('cuadro-ingreso-productos').close()}>
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-            </dialog>
+              {form.enOferta === 'SÍ' && (
+                <>
+                  <label htmlFor="porcOferta">% oferta: </label>
+                  <input type="number" id="porcOferta" min="0" max="100" value={form.porcOferta} onChange={handleChange} />
+                </>
+              )}
+
+              <div style={{ marginTop: '50px' }}>
+                <button type="submit" className="btn button-editar-producto">
+                  {codigo ? 'Actualizar' : 'Aceptar'}
+                </button>
+                <button
+                  type="button"
+                  className="btn button-eliminar-producto"
+                  id="btn-cerrar-cuadro"
+                  onClick={() => document.getElementById('cuadro-ingreso-productos').close()}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </dialog>
         </div>
       </div>
     </div>
