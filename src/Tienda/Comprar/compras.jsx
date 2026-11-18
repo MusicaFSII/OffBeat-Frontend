@@ -11,7 +11,7 @@ import {CarritoContext} from "../Carrito/Carrito";
 function Compras() {
   const navigate = useNavigate();
   const {carrito, costoTotal, totalProductos, limpiarCarrito} = useContext(CarritoContext);
-  const [enviado, setEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
@@ -56,12 +56,25 @@ function Compras() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setEnviado(true);
+    setEnviando(true);
+
+    const usuarioGuardado = localStorage.getItem('usuario');
+    let token = '';
 
     try {
-      const response = await fetch('/api/compras/guardar', {
+      const u = JSON.parse(usuarioGuardado);
+      token = u.token || localStorage.getItem('token') || ''; 
+    } catch (err) {
+      console.error("Error al leer el token", err);
+    }
+
+    try {
+      const response = await fetch('http://localhost:8083/api/compras/guardar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           ...formData,
           productos: carrito.map((item) => ({
@@ -77,14 +90,14 @@ function Compras() {
       if (response.ok ) {
         navigate('/compraExito',{ state: { compraId: data.id } });
       } else {
-        navigate('/compraFallo',{ state: { compraId: data.error} });
+        navigate('/compraFallo',{ state: { errorMsg: data.error} });
       }
     } catch (error) {
       console.error("Error al enviar la compra:", error);
       navigate('/compraFallo', { state: { errorMsg: "Error al procesar el pago" } });
     }
     finally {
-      setEnviado(false);
+      setEnviando(false);
     }
   };
 
@@ -166,7 +179,6 @@ function Compras() {
               required
               value={formData.correo}
               onChange={handleChange}
-              onBlur={correoBlur}
             />
             <label htmlFor="nombre">Nombre</label>
             <input

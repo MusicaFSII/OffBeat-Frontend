@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect} from "react";
 import { useParams, Link } from "react-router-dom";
 import Table from "react-bootstrap/Table";
 import Badge from "react-bootstrap/Badge";
@@ -24,7 +24,7 @@ function HistorialCompra() {
         const dataCompras = await responseCompras.json();
 
         if (responseCompras.ok) {
-          setCompras(dataCompra);
+          setCompras(dataCompras);
         } else {
           setError("No se pudieron obtener las compras del usuario.");
         }
@@ -70,8 +70,8 @@ function HistorialCompra() {
           </thead>
           <tbody>
             {compras.map((compra) => {
-              const cantidadProductos = compra.detalle
-                ? compra.detalle.reduce((acc, item) => acc + (item.cantidad || 1), 0)
+              const cantidadProductos = compra.detalles
+                ? compra.detalles.reduce((acc, item) => acc + (item.cantidad || 1), 0)
                 : 1;
 
               return (

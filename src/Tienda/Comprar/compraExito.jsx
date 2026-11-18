@@ -100,17 +100,17 @@ function CompraExito() {
                     </tr>
                   </thead>
                   <tbody>
-                    {compra.productos && compra.productos.map((item, index) => (
+                    {compra.detalle && compra.detalle.map((item, index) => (
                       <tr key={index}>
-                        <td>{item.nombre_producto}</td>
-                        <td>${item.precio.toLocaleString('es-CL')}</td>
+                        <td>{item.producto.nombre}</td>
+                        <td>${item.producto.precio.toLocaleString('es-CL')}</td>
                         <td>{item.cantidad}</td>
-                        <td>${(item.precio * item.cantidad).toLocaleString('es-CL')}</td>
+                        <td>${(item.producto.precio * item.cantidad).toLocaleString('es-CL')}</td>
                       </tr>
                     ))}
                     <tr>
-                      <th colSpan={5} className="text-end pe-4 fs-5">
-                        Total pagado: ${compra.total}
+                      <th colSpan={4} className="text-end pe-4 fs-5">
+                        Total pagado: ${compra.total.toLocaleString('es-CL')}
                       </th>
                     </tr>
                   </tbody>
