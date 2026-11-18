@@ -100,7 +100,7 @@ function CompraExito() {
                     </tr>
                   </thead>
                   <tbody>
-                    {compra.detalle && compra.detalle.map((item, index) => (
+                    {compra.detalles && compra.detalles.map((item, index) => (
                       <tr key={index}>
                         <td>{item.producto.nombre}</td>
                         <td>${item.producto.precio.toLocaleString('es-CL')}</td>

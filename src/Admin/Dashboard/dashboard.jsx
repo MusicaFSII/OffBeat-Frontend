@@ -23,7 +23,7 @@ function Dashboard() {
       });
 
       //obtener el total de productos
-      fetch('/api/productos')
+      fetch('http://localhost:8081/api/v1/productos')
         .then((response) => response.json())
         .then((data) => {
           const lista = Array.isArray(data) ? data : data.productos;

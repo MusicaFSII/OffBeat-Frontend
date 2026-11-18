@@ -20,8 +20,8 @@ export default defineConfig({
       '/api/usuarios': 'http://localhost:8082',
       '/api/comentarios': 'http://localhost:8082',
       '/api/compras': 'http://localhost:8083',
-      '/api/v1/productos': 'http://localhost:8080',
-      '/api/v1/categorias': 'http://localhost:8080',
+      '/api/v1/productos': 'http://localhost:8081',
+      '/api/v1/categorias': 'http://localhost:8081',
     },
     watch: {
       usePolling: true,
