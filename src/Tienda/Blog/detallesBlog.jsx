@@ -3,19 +3,21 @@ import { useParams } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import './blog.css'
 
+const url_blog = "http://localhost:8083/api/v1/blogs";
+const url_imagen = "http://localhost:8083/uploads/blogs/";
+
 export default function detallesBlog() {
-  const {blog_id} = useParams();
-  const [blogs, setBlogs] = useState(null);
+  const {codigo_blog} = useParams();
+  console.log("codigo_blog:", codigo_blog);
+  const [blog, setBlog] = useState(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    const cargarBlogs = async () => {
+    const cargarBlog = async () => {
       try {
-        const res = await fetch(`/api/blogs/detalles/${blog_id}`);
-        const data = await res.json();
-  
-        if (res.ok) {
-          setBlogs(data);
+        const res = await fetch(`${url_blog}/${codigo_blog}`);
+        if(res.ok){
+          setBlog(await res.json());
         }
       } catch (e) {
         console.error('Error al conectar con el servidor:', e);
@@ -24,14 +26,14 @@ export default function detallesBlog() {
       }
     };
 
-    cargarBlogs();
-  }, [blog_id]);
+    cargarBlog();
+  }, [codigo_blog]);
 
   if (cargando) {
     return <div>Cargando blogs...</div>;
   }
 
-  if (cargando) {
+  if (!blog) {
     return <div>No se encontró el blog</div>;
   }
 
@@ -39,11 +41,11 @@ export default function detallesBlog() {
     <div>
       <div>
         <Card className="separacion-titulo-parrafo">
-          <Card.Img src={blogs.imagen_blog} className="tamano-imagen-blog-detalle" />
+          <Card.Img src={`${url_imagen}${blog.imagen}`} className="tamano-imagen-blog-detalle" />
           <div className="contenido-texto-blog">
-            <Card.Title className="titulo-blog-detalle">{blogs.titulo}</Card.Title>
+            <Card.Title className="titulo-blog-detalle">{blog.titulo}</Card.Title>
             <div className="parrafo-posicion-tamano">
-              {blogs.contenido}
+              {blog.contenido}
             </div>
           </div>
         </Card>
