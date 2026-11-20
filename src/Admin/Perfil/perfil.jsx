@@ -14,7 +14,7 @@ function Perfil() {
     if (!usuarioGuardado) return;
     
     try {
-      const response = await fetch(`/api/usuarios/${usuarioGuardado.id}`);
+      const response = await fetch(`/api/v1/usuarios/${usuarioGuardado.id}`);
       const data = await response.json();
       if(response.ok) {
         setUsuario(data);

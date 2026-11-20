@@ -32,7 +32,7 @@ function Contacto() {
     setMensaje('');
  
     try {
-      const response = await fetch('/api/comentarios/guardar', {
+      const response = await fetch('/api/v1/comentarios', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(datos)
@@ -100,7 +100,6 @@ function Contacto() {
                   className="form-control"
                   maxLength="100"
                   name="correo"
-                  pattern=".+@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)"
                   placeholder="Correo Electronico"
                   type="text"
                   required

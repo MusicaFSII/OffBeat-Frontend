@@ -17,9 +17,9 @@ export default defineConfig({
   server: {
     proxy: {
       // microservicios Spring Boot (las rutas especificas van primero)
-      '/api/usuarios': 'http://localhost:8082',
-      '/api/comentarios': 'http://localhost:8082',
-      '/api/compras': 'http://localhost:8083',
+      '/api/v1/usuarios': 'http://localhost:8082',
+      '/api/v1/comentarios': 'http://localhost:8082',
+      '/api/v1/compras': 'http://localhost:8083',
       '/api/v1/productos': 'http://localhost:8081',
       '/api/v1/categorias': 'http://localhost:8081',
     },

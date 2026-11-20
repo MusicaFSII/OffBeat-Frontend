@@ -10,7 +10,7 @@ function Usuarios() {
 
   const cargarUsuarios = async () => {
     try{
-      const response = await fetch('/api/usuarios');
+      const response = await fetch('/api/v1/usuarios');
       const data = await response.json();
       if(response.ok){
         setUsuarios(data);
@@ -33,7 +33,7 @@ function Usuarios() {
     if(!usuarioAEliminar) return;
 
     try {
-      const response = await fetch(`/api/usuarios/eliminar/${usuarioAEliminar.id}`, {
+      const response = await fetch(`/api/v1/usuarios/${usuarioAEliminar.id}`, {
         method: 'DELETE',
       });
 

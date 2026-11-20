@@ -39,7 +39,7 @@ function Login() {
     setError("");
 
     try {
-      const response = await fetch('/api/usuarios/login', {
+      const response = await fetch('/api/v1/usuarios/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo, contrasena }),
@@ -62,7 +62,7 @@ function Login() {
     setError("");
 
     try {
-      const response = await fetch('/api/usuarios/login/google', {
+      const response = await fetch('/api/v1/usuarios/login/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: credentialResponse.credential }),
@@ -149,7 +149,6 @@ function Login() {
               maxLength="100"
               name="correo"
               id="correo"
-              pattern=".+@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)"
               placeholder="Correo Electrónico"
               type="email"
               value={correo}
