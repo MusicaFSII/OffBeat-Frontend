@@ -30,11 +30,7 @@ export default function Ordenes() {
 
   const cargarCompras = async () => {
     try {
-      const res = await fetch('/api/compras', { headers: obtenerHeaders() });
-      if (!res.ok) {
-       console.error("Error al cargar compras:", res.status);
-       return;
-      }
+      const res = await fetch('http://localhost:8084/api/v1/compras');
       const data = await res.json();
       setCompras(Array.isArray(data) ? data : (data.compras ?? []));
     } catch (error) {
@@ -44,11 +40,7 @@ export default function Ordenes() {
 
   const cargarUsuarios = async () => {
     try {
-      const res = await fetch('/api/usuarios', { headers: obtenerHeaders() });
-      if(!res.ok) {
-        console.error("Error al cargar usuarios:", res.status);
-        return;
-      }
+      const res = await fetch('http://localhost:8082/api/v1/usuarios');
       const data = await res.json();
       setUsuarios(Array.isArray(data) ? data : (data.usuarios ?? []));
     } catch (error) {

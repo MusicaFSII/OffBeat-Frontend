@@ -45,7 +45,4 @@ export function carrito({children}){
       {children}
     </CarritoContext.Provider>
     )
-  
-
-
 }

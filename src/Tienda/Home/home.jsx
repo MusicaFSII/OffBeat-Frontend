@@ -137,7 +137,7 @@ function Home() {
                       {prod.enOferta === true && prod.porcOferta > 0 ? (
                         <div className="vinyl-price-offer">
                             <span className="precio_antiguo">{formatoPrecio(prod.precio)}</span>
-                            <strong >{formatoPrecio(prod.precio)}</strong>
+                            <strong >{formatoPrecio(prod.precioFinal)}</strong>
                             <span className="descuento">-{prod.porcOferta}%</span>
                           </div>
                       ):(

@@ -75,7 +75,7 @@ function Compras() {
     }
 
     try {
-      const response = await fetch('http://localhost:8083/api/compras/guardar', {
+      const response = await fetch('http://localhost:8083/api/v1/compras/guardar', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

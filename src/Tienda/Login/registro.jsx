@@ -15,7 +15,7 @@ function Registro() {
         e.preventDefault();
         const datos = Object.fromEntries(new FormData(e.target));
         try {
-            const response = await fetch('/api/v1/usuarios', {
+            const response = await fetch('http://localhost:8082/api/v1/usuarios/registro', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datos),

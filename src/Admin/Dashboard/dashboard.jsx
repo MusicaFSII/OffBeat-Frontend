@@ -13,7 +13,7 @@ function Dashboard() {
 
   useEffect(() => {
     //obtener el total de usuarios
-    fetch('/api/v1/usuarios/count')
+    fetch('http://localhost:8082/api/v1/usuarios/count')
       .then((response) => response.json())
       .then((data) => {
         setTotalUsuarios(data.total);

@@ -13,14 +13,14 @@ function HistorialCompra() {
   useEffect(() => {
     const obtenerDatos = async () => {
       try {
-        const responseUsuario = await fetch(`/api/usuarios/${id}`);
+        const responseUsuario = await fetch(`http://localhost:8082/api/v1/usuarios/${id}`);
         const dataUsuario = await responseUsuario.json();
 
         if (responseUsuario.ok) {
           setUsuario(dataUsuario);
         }
 
-        const responseCompras = await fetch(`/api/compras/usuario/${id}`);
+        const responseCompras = await fetch(`http://localhost:8082/api/v1/usuarios/${id}`);
         const dataCompras = await responseCompras.json();
 
         if (responseCompras.ok) {

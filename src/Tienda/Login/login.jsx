@@ -39,7 +39,7 @@ function Login() {
     setError("");
 
     try {
-      const response = await fetch('/api/v1/usuarios/login', {
+      const response = await fetch('http://localhost:8082/api/v1/usuarios/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo, contrasena }),
@@ -62,7 +62,7 @@ function Login() {
     setError("");
 
     try {
-      const response = await fetch('/api/v1/usuarios/login/google', {
+      const response = await fetch('http://localhost:8082/api/v1/usuarios/login/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: credentialResponse.credential }),
