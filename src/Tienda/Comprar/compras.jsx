@@ -11,7 +11,8 @@ import {CarritoContext} from "../Carrito/Carrito";
 function Compras() {
   const navigate = useNavigate();
   const {carrito, costoTotal, totalProductos, limpiarCarrito} = useContext(CarritoContext);
-  const [enviado, setEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [logueado, setLogueado] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
@@ -28,12 +29,13 @@ function Compras() {
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem('usuario');
     if (!usuarioGuardado) {
-      navigate('/login');
+      setLogueado(false);
       return;
     }
 
     try {
       const u = JSON.parse(usuarioGuardado);
+      setLogueado(true);
       setFormData(prev => ({
         ...prev,
         nombre: u.nombre || prev.nombre,
@@ -45,7 +47,7 @@ function Compras() {
       }));
     } catch (error) {
       console.error("Error al cargar el usuario:", error);
-      navigate('/login');
+      setLogueado(false);
     }
   }, []);
 
@@ -56,12 +58,29 @@ function Compras() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setEnviado(true);
+    if (!logueado) {
+      navigate('/login');
+      return;
+    }
+    setEnviando(true);
+
+    const usuarioGuardado = localStorage.getItem('usuario');
+    let token = '';
 
     try {
-      const response = await fetch('/api/compras/guardar', {
+      const u = JSON.parse(usuarioGuardado);
+      token = u.token || localStorage.getItem('token') || ''; 
+    } catch (err) {
+      console.error("Error al leer el token", err);
+    }
+
+    try {
+      const response = await fetch('http://localhost:8083/api/v1/compras/guardar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           ...formData,
           productos: carrito.map((item) => ({
@@ -77,14 +96,14 @@ function Compras() {
       if (response.ok ) {
         navigate('/compraExito',{ state: { compraId: data.id } });
       } else {
-        navigate('/compraFallo',{ state: { compraId: data.error} });
+        navigate('/compraFallo',{ state: { errorMsg: data.error} });
       }
     } catch (error) {
       console.error("Error al enviar la compra:", error);
       navigate('/compraFallo', { state: { errorMsg: "Error al procesar el pago" } });
     }
     finally {
-      setEnviado(false);
+      setEnviando(false);
     }
   };
 
@@ -154,123 +173,134 @@ function Compras() {
     <hr style={{ border: '0', borderTop: '2px solid #FFF3CF', margin: '10px 0' }} />
       {/*informacion del cliente*/}
       <div className="contenedor_formulario">
-        <form onSubmit={submit}>
-          <h3>Información del Cliente</h3>
-            <label htmlFor="correo">Correo</label>
-            <input
-              maxLength="100"
-              name="correo"
-              pattern=".+@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)"
-              placeholder="Correo Electrónico"
+         {!logueado ? (
+          <div className="text-center py-4">
+            <h3>Información del Cliente</h3>
+            <p>Debes iniciar sesión para continuar con tu compra.</p>
+            <Button as={Link} to="/login" className="boton">
+              Iniciar sesión
+            </Button>
+            <p className="mt-3 mb-0">
+              ¿No tienes cuenta? <Link to="/registro">Regístrate</Link>
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={submit}>
+            <h3>Información del Cliente</h3>
+              <label htmlFor="correo">Correo</label>
+              <input
+                maxLength="100"
+                name="correo"
+                placeholder="Correo Electrónico"
+                type="text" 
+                required
+                value={formData.correo}
+                onChange={handleChange}
+              />
+              <label htmlFor="nombre">Nombre</label>
+              <input
+                maxLength="100"
+                name="nombre"
+                placeholder="Nombre"
+                type="text"
+                required
+                value={formData.nombre}
+                onChange={handleChange}
+              />
+              <label htmlFor="apellido">Apellido</label>
+              <input
+                maxLength="100"
+                name="apellido"
+                placeholder="Apellido"
+                type="text"
+                required
+                value={formData.apellido}
+                onChange={handleChange}
+              />
+              
+            <hr style={{ border: '0', borderTop: '2px solid #FFF3CF', margin: '10px 0' }} />
+            {/*informacion de envio */}
+            <h3>Información Dirección de Envío</h3>
+            <label htmlFor="telefono">Teléfono</label>
+            <input 
+              name="telefono" 
+              placeholder="Teléfono" 
               type="text" 
               required
-              value={formData.correo}
-              onChange={handleChange}
-              onBlur={correoBlur}
-            />
-            <label htmlFor="nombre">Nombre</label>
-            <input
-              maxLength="100"
-              name="nombre"
-              placeholder="Nombre"
-              type="text"
-              required
-              value={formData.nombre}
+              value={formData.telefono}
               onChange={handleChange}
             />
-            <label htmlFor="apellido">Apellido</label>
-            <input
-              maxLength="100"
-              name="apellido"
-              placeholder="Apellido"
-              type="text"
+            <label htmlFor="calle">Calle</label>
+            <input 
+              name="calle" 
+              placeholder="Calle" 
+              type="text" 
               required
-              value={formData.apellido}
+              value={formData.calle}
+              onChange={handleChange}
+            />
+            <label htmlFor="depo">Departamento (opcional)</label>
+            <input 
+              name="depo" 
+              placeholder="Departamento" 
+              type="text" 
+              value={formData.depo}
               onChange={handleChange}
             />
             
-          <hr style={{ border: '0', borderTop: '2px solid #FFF3CF', margin: '10px 0' }} />
-          {/*informacion de envio */}
-          <h3>Información Dirección de Envío</h3>
-          <label htmlFor="telefono">Teléfono</label>
-          <input 
-            name="telefono" 
-            placeholder="Teléfono" 
-            type="text" 
-            required
-            value={formData.telefono}
-            onChange={handleChange}
-          />
-          <label htmlFor="calle">Calle</label>
-          <input 
-            name="calle" 
-            placeholder="Calle" 
-            type="text" 
-            required
-            value={formData.calle}
-            onChange={handleChange}
-          />
-          <label htmlFor="depo">Departamento (opcional)</label>
-          <input 
-            name="depo" 
-            placeholder="Departamento" 
-            type="text" 
-            value={formData.depo}
-            onChange={handleChange}
-          />
-          
-          <div className="region-comuna">
-            <select id="region" name="region" value={formData.region} onChange={handleChange} required>
-              <option value="selecciona" disabled>Seleccione la Región</option>
-              <option value="metropolitana">Región Metropolitana</option>
-              <option value="aisen">Aisén</option>
-              <option value="antofagasta">Antofagasta</option>
-              <option value="araucania">Araucanía</option>
-              <option value="arica y parinacota">Arica y Parinacota</option>
-              <option value="atacama">Atacama</option>
-              <option value="biobio">Biobío</option>
-              <option value="coquimbo">Coquimbo</option>
-              <option value="libertador bernardo">
-                Libertador General Bernardo O'Higgins
-              </option>
-              <option value="los lagos">Los Lagos</option>
-              <option value="los rios">Los Ríos</option>
-              <option value="magallanes">Magallanes</option>
-              <option value="maule">Maule</option>
-              <option value="ñuble">Ñuble</option>
-              <option value="tarapaca">Tarapacá</option>
-              <option value="valparaiso">Valparaíso</option>
-            </select>
+            <div className="region-comuna">
+              <select id="region" name="region" value={formData.region} onChange={handleChange} required>
+                <option value="selecciona" disabled>Seleccione la Región</option>
+                <option value="metropolitana">Región Metropolitana</option>
+                <option value="aisen">Aisén</option>
+                <option value="antofagasta">Antofagasta</option>
+                <option value="araucania">Araucanía</option>
+                <option value="arica y parinacota">Arica y Parinacota</option>
+                <option value="atacama">Atacama</option>
+                <option value="biobio">Biobío</option>
+                <option value="coquimbo">Coquimbo</option>
+                <option value="libertador bernardo">
+                  Libertador General Bernardo O'Higgins
+                </option>
+                <option value="los lagos">Los Lagos</option>
+                <option value="los rios">Los Ríos</option>
+                <option value="magallanes">Magallanes</option>
+                <option value="maule">Maule</option>
+                <option value="ñuble">Ñuble</option>
+                <option value="tarapaca">Tarapacá</option>
+                <option value="valparaiso">Valparaíso</option>
+              </select>
 
-            <input 
-              name="comuna" 
-              placeholder="Comuna" 
-              type="text" 
-              required
-              value={formData.comuna}
+              <input 
+                name="comuna" 
+                placeholder="Comuna" 
+                type="text" 
+                required
+                value={formData.comuna}
+                onChange={handleChange}
+              />
+            </div>
+
+            <label htmlFor="indicacion">Indicaciones de Entrega (opcional)</label>
+            <textarea
+              className="form-control"
+              maxLength="500"
+              name="indicacion"
+              placeholder="Indicación"
+              rows="4"
+              value={formData.indicacion}
               onChange={handleChange}
             />
-          </div>
 
-          <label htmlFor="indicacion">Indicaciones de Entrega (opcional)</label>
-          <textarea
-            className="form-control"
-            maxLength="500"
-            name="indicacion"
-            placeholder="Indicación"
-            rows="4"
-            value={formData.indicacion}
-            onChange={handleChange}
-          />
+            {/* Botón de pagar */}
+            <div className="container mt-4">
+              <Button type="submit" className="boton" disabled={enviando || carrito.length === 0}>
+                {enviando ? 'Procesando...' : `Pagar $${costoTotal.toLocaleString('es-CL')}`}
+              </Button>
+            </div>
 
-          {/* Botón de pagar */}
-          <div className="container mt-4">
-            <Button type="submit" className="boton" disabled={enviando || carrito.length === 0}>
-              {enviando ? 'Procesando...' : `Pagar $${costoTotal.toLocaleString('es-CL')}`}
-            </Button>
-          </div>
-
-        </form>
+          </form>
+        )}
       </div>
     </div>
   </main>

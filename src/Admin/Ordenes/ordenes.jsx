@@ -20,7 +20,7 @@ export default function Ordenes() {
 
   const cargarCompras = async () => {
     try {
-      const res = await fetch('/api/compras');
+      const res = await fetch('http://localhost:8084/api/v1/compras');
       const data = await res.json();
       if (data.ok) setCompras(data.compras);
     } catch (error) {
@@ -30,7 +30,7 @@ export default function Ordenes() {
 
   const cargarUsuarios = async () => {
     try {
-      const res = await fetch('/api/usuarios');
+      const res = await fetch('http://localhost:8082/api/v1/usuarios');
       const data = await res.json();
       if (data.ok) setUsuarios(data.usuarios);
     } catch (error) {

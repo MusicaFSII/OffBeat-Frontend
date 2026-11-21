@@ -25,7 +25,7 @@ function EditarUsuario() {
   useEffect(() => {
     const obtenerUsuario = async () => {
       try {
-        const response = await fetch(`/api/usuarios/${id}`);
+        const response = await fetch(`http://localhost:8082/api/v1/usuarios/${id}`);
         const data = await response.json();
         if (response.ok) {
           setFormData(data);
@@ -51,7 +51,7 @@ function EditarUsuario() {
     setError("");
 
     try {
-      const response = await fetch(`/api/usuarios/actualizar/${id}`, {
+      const response = await fetch(`http://localhost:8082/api/v1/usuarios/actualizar/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

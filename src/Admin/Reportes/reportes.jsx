@@ -18,7 +18,7 @@ function Reportes() {
 
   const cargarDatosReporte = async () => {
     try {
-      const res = await fetch('/api/productos');
+      const res = await fetch('http://localhost:8081/api/v1/productos');
       const data = await res.json();
       const productos = Array.isArray(data) ? data : data.productos;
       
@@ -108,8 +108,8 @@ function Reportes() {
                 </thead>
                 <tbody>
                   {productosCriticos.map(prod => (
-                    <tr key={prod.id_producto || prod.codigo}>
-                      <td>{prod.id_producto || prod.codigo}</td>
+                    <tr key={prod.codigo}>
+                      <td>{prod.codigo}</td>
                       <td>{prod.nombre}</td>
                       <td><span className="badge bg-danger">{prod.stock} un.</span></td>
                       <td>${prod.precio ? prod.precio.toLocaleString('es-CL') : 0}</td>

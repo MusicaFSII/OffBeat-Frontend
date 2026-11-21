@@ -5,6 +5,7 @@ import Accordion from 'react-bootstrap/Accordion';
 import './productos.css';
 
 const url = 'http://localhost:8081/api/v1/productos'
+const url_imagen = 'http://localhost:8081/uploads/productos/';
 
 export default function DetalleProductos() {
   const { codigo } = useParams();
@@ -15,9 +16,7 @@ export default function DetalleProductos() {
   const { agregarProducto } = useContext(CarritoContext);
 
   useEffect(() => {
-    const endpoint = codigo ? `${url}/${codigo}` : `${url}`;
-
-    fetch(endpoint)
+    fetch(`${url}/${codigo}`)
       .then((respuesta) => {
         if (!respuesta.ok) {
           throw new Error('No se pudo encontrar el producto');
@@ -25,11 +24,7 @@ export default function DetalleProductos() {
         return respuesta.json();
       })
       .then((data) => {
-        if (data) {
-          setProducto(data);
-        } else {
-          setError('No se pudo encontrar el producto');
-        }
+        setProducto(data);
         setCargando(false);
       })
       .catch((err) => {
@@ -41,11 +36,9 @@ export default function DetalleProductos() {
   if (cargando) return <div className="text-center p-5">Cargando producto...</div>;
   if (error || !producto) return <div className="text-center p-5">{error || 'Producto no encontrado.'}</div>;
   
-  const precioBase = producto.precio_final !== undefined ? producto.precio_final : producto.precio;
-  const porcentajeIVA = 0.19;
-  const montoIVA = precioBase * porcentajeIVA;
-  const precioNeto = precioBase - montoIVA;
-  const precioTotal = precioBase;
+  const imagen = `${url_imagen}${producto.imagenUrl}`;
+  const enOferta = producto.enOferta === true && producto.porcOferta > 0;
+  const precioNeto = producto.precioFinal - producto.precioIva;
   
   const formatearPrecio = (valor) => {
     return valor ? new Intl.NumberFormat('es-CL').format(valor) : '0';
@@ -53,10 +46,10 @@ export default function DetalleProductos() {
 
   const agregarClick = () => {
     agregarProducto({
-      id: producto.idProducto || producto.codigo,
+      id: producto.codigo,
       nombre: producto.nombre,
-      precio: precioBase || 0,
-      imagen: producto.imagenProducto || 'https://via.placeholder.com/300?text=Sin+Imagen'
+      precio: producto.precioFinal,
+      imagen: imagen
     });
   };
 
@@ -64,17 +57,17 @@ export default function DetalleProductos() {
     <main className="container">
       <div className="container-presentacion">
         <div className="card-productos">
-          {producto.enOferta === true && producto.porcOferta > 0 && (
+          {enOferta && (
             <span className="badge bg-danger">
               -{producto.porcOferta}%
             </span>
           )}
           <h1>{producto.nombre}</h1>
-          <img src={producto.imagenProducto} className="card-productos-img" alt={producto.nombre || "producto-detalle"} />
+          <img src={imagen} className="card-productos-img" alt={producto.nombre || "producto-detalle"} />
         </div>
 
           <div className="card-precios-detalles">
-            {producto.enOferta === true && producto.porcOferta > 0 &&(
+            {enOferta &&(
               <div>
               <span>
                 Precio normal: ${formatearPrecio(producto.precio)}
@@ -85,10 +78,10 @@ export default function DetalleProductos() {
               Precio neto: $<span id="precioProducto">{formatearPrecio(precioNeto)}</span>
             </p>
             <p>
-              IVA (19%): $<span id="precioIVA">{formatearPrecio(montoIVA)}</span>
+              IVA (19%): $<span id="precioIVA">{formatearPrecio(producto.precioIva)}</span>
             </p>
             <p className='precio-total'>
-              Precio TOTAL: $<span id="precioTotal">{formatearPrecio(precioTotal)}</span>
+              Precio TOTAL: $<span id="precioTotal">{formatearPrecio(producto.precioFinal)}</span>
             </p>
 
             <button type="button" className="btn btn-info btn-carrito button-agregar" onClick={agregarClick}>

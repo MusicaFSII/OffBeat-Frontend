@@ -18,7 +18,7 @@ function CompraExito() {
 
     const cargarCompra = async () => {
       try {
-        const response = await fetch(`/api/compras/${compraId}`);
+        const response = await fetch(`http://localhost:8083/api/v1/compras/${compraId}`);
         const data = await response.json();
         if (response.ok) {
           setCompra(data);

@@ -13,7 +13,7 @@ function Dashboard() {
 
   useEffect(() => {
     //obtener el total de usuarios
-    fetch('/api/usuarios/count')
+    fetch('http://localhost:8082/api/v1/usuarios/count')
       .then((response) => response.json())
       .then((data) => {
         setTotalUsuarios(data.total);
@@ -23,7 +23,7 @@ function Dashboard() {
       });
 
       //obtener el total de productos
-      fetch('/api/productos')
+      fetch('http://localhost:8081/api/v1/productos')
         .then((response) => response.json())
         .then((data) => {
           const lista = Array.isArray(data) ? data : data.productos;

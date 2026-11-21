@@ -24,8 +24,6 @@ export default function Ofertas() {
     cargarProductos();
   }, []);
 
-  const precioFinal = (prod) =>
-    prod.precio - (prod.precio * prod.porcOferta) /100;
   if (cargando) {
     return <div className="text-center p-5">Cargando catálogo...</div>;
   }
@@ -38,11 +36,11 @@ export default function Ofertas() {
 
       <div className="row">
         {productos.map((prod) => (
-          <div key={prod.idProducto || prod.codigo} className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+          <div key={prod.codigo} className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
             <Link to={`/producto/${prod.codigo}`} className="card-link text-decoration-none">
               <div className="card h-100 text-center p-3 shadow-sm">
                 <div className="img-box mb-2 d-flex align-items-center justify-content-center" style={{ height: '180px' }}>
-                  <img src={prod.imagenProducto} className="img-fluid" alt={prod.nombre} style={{ maxHeight: '100%', objectFit: 'contain' }}/>
+                  <img src={prod.imagenUrl} className="img-fluid" alt={prod.nombre} style={{ maxHeight: '100%', objectFit: 'contain' }}/>
                 </div>
                 <div className="card-body d-flex flex-column justify-content-between p-2">
                   <h6 className="card-title text-bright">{prod.nombre}</h6>
@@ -56,7 +54,7 @@ export default function Ofertas() {
                             ${prod.precio ? prod.precio.toLocaleString('es-CL') : 0}
                           </span>
                           <span className="fw-bold text-danger">
-                            ${precioFinal(prod).toLocaleString('es-CL')}
+                            ${prod.precioFinal.toLocaleString('es-CL')}
                           </span>
                         </>
                       ) : (

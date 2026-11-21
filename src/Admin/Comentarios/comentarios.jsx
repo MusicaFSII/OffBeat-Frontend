@@ -8,7 +8,7 @@ function Comentarios() {
   useEffect(() => {
     const cargarComentarios = async () => {
       try {
-        const response = await fetch('/api/comentarios');
+        const response = await fetch('http://localhost:8082/api/v1/comentarios');
         const data = await response.json();
 
         if (response.ok) {

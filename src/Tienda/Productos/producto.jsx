@@ -25,8 +25,6 @@ export default function CatalogoProductos() {
     cargarProductos();
   }, []);
 
-  const precioFinal = (prod) =>
-    prod.precio - (prod.precio * prod.porcOferta) /100;
   if (cargando) {
     return <div className="text-center p-5">Cargando catálogo...</div>;
   }
@@ -57,7 +55,7 @@ export default function CatalogoProductos() {
                             ${prod.precio ? prod.precio.toLocaleString('es-CL') : 0}
                           </span>
                           <span className="fw-bold text-danger">
-                            ${precioFinal(prod).toLocaleString('es-CL')}
+                            ${prod.precioFinal.toLocaleString('es-CL')}
                           </span>
                         </>
                       ) : (
