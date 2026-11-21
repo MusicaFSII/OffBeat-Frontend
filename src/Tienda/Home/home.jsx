@@ -14,31 +14,25 @@ const formatoPrecio = (precio) =>
 
 function Home() {
   const [productos, setProductos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
 
   useEffect(() => {
     const cargarProductos = async () => {
       try{
         const res = await fetch ('http://localhost:8081/api/v1/productos')
         const data = await res.json()
-
         setProductos(Array.isArray(data) ? data : [])
+
+        const resCategorias = await fetch('http://localhost:8081/api/v1/categorias')
+        const dataCategorias = await resCategorias.json()
+        setCategorias(Array.isArray(dataCategorias) ? dataCategorias : [])
+
       }catch (error){
         console.error("Error al conectar al servidor", error)
       }
     }
     cargarProductos()
   }, []);
-
-  const categoriasunicas = Array.from(
-  new Map(
-    productos
-      .filter(p => p.categoria_nombre) // Asegura que al menos tenga nombre
-      .map(p => {
-        const idReal = p.categoria_id || p.id_categoria || p.categoria_nombre;
-        return [idReal, { id: idReal, nombre: p.categoria_nombre }];
-      })
-  ).values()
-)
 
   return (
     <main className="offbeat-home">
@@ -173,11 +167,10 @@ function Home() {
         </div>
 
         <div className="genre-grid">
-          {categoriasunicas.map((cat, index) => {
+          {categorias.map((cat, index) => {
             const numeroFormateado = String(index + 1).padStart(2, '0')
-
             const claseColor = paletaColores[index % paletaColores.length];
-            
+            const catId = cat.codigoCategoria || cat.id;
             return (
               <Link to={`/categorias/${cat.id}`} className={`genre-card ${claseColor}`} key={cat.id || `cat-${index}`}>
                 <span className="genre-number">

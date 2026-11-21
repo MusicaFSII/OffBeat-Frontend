@@ -6,6 +6,16 @@ import Form from 'react-bootstrap/Form';
 import { BsFileEarmarkPdf, BsSearch } from "react-icons/bs";
 import html2pdf from 'html2pdf.js';
 
+//headers con el token de la sesion
+const obtenerHeaders = () => {
+  try {
+    const token = JSON.parse(localStorage.getItem('usuario'))?.token;
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+};
+
 export default function Ordenes() {
   const [compras, setCompras] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
@@ -22,7 +32,7 @@ export default function Ordenes() {
     try {
       const res = await fetch('http://localhost:8084/api/v1/compras');
       const data = await res.json();
-      if (data.ok) setCompras(data.compras);
+      setCompras(Array.isArray(data) ? data : (data.compras ?? []));
     } catch (error) {
       console.error("Error al cargar compras:", error);
     }
@@ -32,15 +42,18 @@ export default function Ordenes() {
     try {
       const res = await fetch('http://localhost:8082/api/v1/usuarios');
       const data = await res.json();
-      if (data.ok) setUsuarios(data.usuarios);
+      setUsuarios(Array.isArray(data) ? data : (data.usuarios ?? []));
     } catch (error) {
       console.error("Error al cargar usuarios:", error);
     }
   };
 
   const comprasFiltradas = filtroUsuarioId 
-    ? compras.filter(c => String(c.usuario_id) === String(filtroUsuarioId))
+    ? compras.filter(c => String(c.usuarioId) === String(filtroUsuarioId))
     : compras;
+
+  const formatearFecha = (fecha) =>
+    fecha ? new Date(fecha).toLocaleString('es-CL')  : '';
 
   const descargarBoletaPDF = (compra) => {
     setCompraSeleccionada(compra);
@@ -107,10 +120,10 @@ export default function Ordenes() {
                   comprasFiltradas.map(compra => (
                     <tr key={compra.id}>
                       <td>#{compra.id}</td>
-                      <td>{compra.fecha}</td>
+                      <td>{formatearFecha(compra.fecha)}</td>
                       <td>{compra.nombre} {compra.apellido}</td>
                       <td>{compra.correo}</td>
-                      <td>${compra.total}</td>
+                      <td>${Number(compra.total).toLocaleString('es-CL')}</td>
                       <td>
                         <Button 
                           className="botonPDF"
@@ -133,7 +146,7 @@ export default function Ordenes() {
           {compraSeleccionada && (
             <div ref={boletaRef} className="p-4 bg-white text-dark" style={{ width: '600px' }}>
               <h3 className="text-success mb-3">Boleta Electrónica - Nro #{compraSeleccionada.id}</h3>
-              <p><strong>Fecha:</strong> {compraSeleccionada.fecha}</p>
+              <p><strong>Fecha:</strong> {formatearFecha(compraSeleccionada.fecha)}</p>
               <hr />
               <h5>Datos del Cliente</h5>
               <p><strong>Nombre:</strong> {compraSeleccionada.nombre} {compraSeleccionada.apellido}</p>
@@ -145,7 +158,32 @@ export default function Ordenes() {
               <p><strong>Comuna / Región:</strong> {compraSeleccionada.comuna}, {compraSeleccionada.region}</p>
               {compraSeleccionada.indicacion && <p><strong>Indicaciones:</strong> {compraSeleccionada.indicacion}</p>}
               <hr />
-              <h4 className="text-end mt-4">Total Pagado: ${compraSeleccionada.total}</h4>
+
+              <h5>Detalle del Pedido</h5>
+              <table style={{ width: '100%', fontSize: '12px' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left' }}>Producto</th>
+                    <th style={{ textAlign: 'right' }}>Precio</th>
+                    <th style={{ textAlign: 'right' }}>Cant.</th>
+                    <th style={{ textAlign: 'right' }}>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(compraSeleccionada.detalles ?? []).map((item, i) => {
+                    const precio = item.producto?.precio ?? 0;
+                    return (
+                      <tr key={i}>
+                        <td>{item.producto?.nombre}</td>
+                        <td style={{ textAlign: 'right' }}>${precio.toLocaleString('es-CL')}</td>
+                        <td style={{ textAlign: 'right' }}>{item.cantidad}</td>
+                        <td style={{ textAlign: 'right' }}>${(precio * item.cantidad).toLocaleString('es-CL')}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <h4 className="text-end mt-4">Total Pagado: ${Number(compraSeleccionada.total).toLocaleString('es-CL')}</h4>
             </div>
           )}
         </div>

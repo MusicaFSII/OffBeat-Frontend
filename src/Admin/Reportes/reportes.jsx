@@ -20,17 +20,12 @@ function Reportes() {
     try {
       const res = await fetch('http://localhost:8081/api/v1/productos');
       const data = await res.json();
-      const productos = Array.isArray(data) ? data : data.productos;
-      
-      if(productos) {
-        setTotalProductos(productos.length);
-        const enStock = productos.filter(p => p.stock > 0).length;
-        setProductosEnStock(enStock);
-        const agotados = productos.filter(p => p.stock === 0).length;
-        setProductosAgotados(agotados);
-        const criticos = productos.filter(p => p.stock <= 6);
-        setProductosCriticos(criticos);
-      }
+      const productos = Array.isArray(data) ? data : data.productos ?? [];
+
+      setTotalProductos(productos.length);
+      setProductosEnStock(productos.filter(p => p.stock > 0).length);
+      setProductosAgotados(productos.filter(p => !p.stock || p.stock <= 0).length);
+      setProductosCriticos(productos.filter(p => p.stock <= 6));
     } catch (error) {
       console.error("Error al cargar datos de productos:", error);
       setProductosCriticos([]);

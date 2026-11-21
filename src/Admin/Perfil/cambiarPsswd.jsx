@@ -25,7 +25,7 @@ function CambiarPsswd() {
     }
 
     try {
-      const response = await fetch(`/api/usuarios/cambiar-clave/${id}`, {
+      const response = await fetch(`/api/v1/usuarios/${id}/clave`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
